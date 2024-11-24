@@ -1,6 +1,15 @@
-var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
+using NotifyMe.Infrastructure.Extensions;
 
-app.MapGet("/", () => "Hello World!");
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.InstallApplicationExtensions();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+app.MapGet("/hello", () => "Hello World!");
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.Run();
