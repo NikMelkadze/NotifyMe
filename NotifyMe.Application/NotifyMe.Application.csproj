@@ -10,4 +10,8 @@
       <Folder Include="Models\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\NotifyMe.Persistence\NotifyMe.Persistence.csproj" />
+    </ItemGroup>
+
 </Project>

@@ -21,7 +21,7 @@ namespace NotifyMe.Persistence.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("NotifyMe.Domain.Entities.UserSavedProducts", b =>
+            modelBuilder.Entity("NotifyMe.Domain.Entities.UserSavedProduct", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

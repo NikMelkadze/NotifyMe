@@ -11,8 +11,8 @@ using NotifyMe.Persistence;
 namespace NotifyMe.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241219180229_Initial")]
-    partial class Initial
+    [Migration("20241219183128_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,7 +24,7 @@ namespace NotifyMe.Persistence.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("NotifyMe.Domain.Entities.UserSavedProducts", b =>
+            modelBuilder.Entity("NotifyMe.Domain.Entities.UserSavedProduct", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
