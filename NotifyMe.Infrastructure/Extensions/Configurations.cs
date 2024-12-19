@@ -6,7 +6,7 @@ namespace NotifyMe.Infrastructure.Extensions;
 
 public static class Configurations
 {
-    public static void InstallApplicationExtensions(this IServiceCollection services)
+    public static void AddInfrastructure(this IServiceCollection services)
     {
         services.AddScoped<IHttpClientService, HttpClientService>();
     }
