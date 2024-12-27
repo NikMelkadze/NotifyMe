@@ -7,7 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="BCrypt.Net" Version="0.1.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\NotifyMe.Application\NotifyMe.Application.csproj" />
+      <ProjectReference Include="..\NotifyMe.Persistence\NotifyMe.Persistence.csproj" />
     </ItemGroup>
 
 </Project>
