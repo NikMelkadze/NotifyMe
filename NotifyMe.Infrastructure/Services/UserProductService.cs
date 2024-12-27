@@ -7,16 +7,16 @@ namespace NotifyMe.Infrastructure.Services;
 
 public class UserProductService(ApplicationDbContext dbContext) : IUserProductService
 {
-    public async Task SaveProduct(string url,int userId)
+    public async Task SaveProduct(string url, int userId)
     {
-        Validators.UrlValidator(url);
-        
+        var shop = Validators.UrlValidator(url);
+
         await dbContext.UserSavedProducts.AddAsync(new UserSavedProduct
         {
             IsActive = true,
             Url = url,
-            UserId = userId
-            
+            UserId = userId,
+            Shop = shop
         });
         await dbContext.SaveChangesAsync();
     }
