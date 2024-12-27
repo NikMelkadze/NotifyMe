@@ -3,19 +3,21 @@ using NotifyMe.Application.Helpers;
 using NotifyMe.Domain.Entities;
 using NotifyMe.Persistence;
 
-namespace NotifyMe.Application.Services;
+namespace NotifyMe.Infrastructure.Services;
 
-public class UserService(ApplicationDbContext dbContext) : IUserService
+public class UserProductService(ApplicationDbContext dbContext) : IUserProductService
 {
-    public async Task SaveProduct(string url)
+    public async Task SaveProduct(string url,int userId)
     {
         Validators.UrlValidator(url);
         
         await dbContext.UserSavedProducts.AddAsync(new UserSavedProduct
         {
             IsActive = true,
-            Url = url
+            Url = url,
+            UserId = userId
+            
         });
-        dbContext.SaveChanges();
+        await dbContext.SaveChangesAsync();
     }
 }

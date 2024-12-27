@@ -7,11 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Models\" />
+      <ProjectReference Include="..\NotifyMe.Persistence\NotifyMe.Persistence.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\NotifyMe.Persistence\NotifyMe.Persistence.csproj" />
+      <Folder Include="Services\" />
     </ItemGroup>
 
 </Project>
