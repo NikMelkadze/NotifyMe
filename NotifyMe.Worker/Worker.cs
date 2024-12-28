@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Mail;
 using AngleSharp;
 using AngleSharp.Dom;
 using Microsoft.EntityFrameworkCore;
@@ -36,8 +38,7 @@ public class Worker(
 
                 if (item.isDiscounted)
                 {
-                    Console.WriteLine(
-                        $"{product.Shop} Item is discounted current price is: {item.currentPrice} previous price is: {item.prevPrice}");
+                    SendEmail("nmelkadze0@gmail.com", product.Shop, item.currentPrice, item.prevPrice);
                 }
                 else
                 {
@@ -82,5 +83,25 @@ public class Worker(
             
         }
         throw new NotImplementedException();
+    }
+
+    private void SendEmail(string userEmail,Shops shop,string currentPrice,string prevPrice)
+    {
+        var mail = new MailMessage
+        {
+            From = new MailAddress("notifymeinformation@gmail.com")
+        };
+        
+        SmtpClient smtpClient = new SmtpClient("smtp.gmail.com", 587)
+        {
+            Credentials = new NetworkCredential("notifymeinformation@gmail.com", "urog lnsb zjkl wbtn "),
+            EnableSsl = true
+        };
+        
+        mail.To.Add(userEmail);
+        mail.Subject = $"{shop} - ის ფასდაკლება მოთხოვნილ პროდუქტზე";
+        mail.Body = $"მიმდინარე ფასი: {currentPrice},ძველი ფასი: {prevPrice}" ;
+        
+        smtpClient.Send(mail);
     }
 }
