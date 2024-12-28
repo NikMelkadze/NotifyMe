@@ -2,6 +2,7 @@ using AngleSharp;
 using AngleSharp.Dom;
 using Microsoft.EntityFrameworkCore;
 using NotifyMe.Domain.Entities;
+using NotifyMe.Domain.Enums;
 using NotifyMe.Infrastructure.Contracts;
 using NotifyMe.Persistence;
 using Configuration = AngleSharp.Configuration;
@@ -10,7 +11,7 @@ namespace NotifyMe.Worker;
 
 public class Worker(
     ILogger<Worker> logger,
-    IServiceProvider  serviceProvider ,
+    IServiceProvider serviceProvider,
     IHttpClientService httpClientService) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -30,18 +31,17 @@ public class Worker(
             {
                 var html = await httpClientService.FetchHtmlFromWeb(product.Url);
                 var document = await context.OpenAsync(req => req.Content(html), stoppingToken);
-                var shop = product.Shop;
 
-                var item = GetPriceElement(document);
+                var item = GetPriceElement(document, product.Shop);
 
                 if (item.isDiscounted)
                 {
                     Console.WriteLine(
-                        $"Item is discounted current price is: {item.currentPrice} previous price is: {item.prevPrice}");
+                        $"{product.Shop} Item is discounted current price is: {item.currentPrice} previous price is: {item.prevPrice}");
                 }
                 else
                 {
-                    Console.WriteLine("Item is not Discounted");
+                    Console.WriteLine($"{product.Shop} Item is not Discounted");
                 }
             }
 
@@ -54,22 +54,33 @@ public class Worker(
         }
     }
 
-    private (bool isDiscounted, string currentPrice, string prevPrice) GetPriceElement(IDocument document)
+    private (bool isDiscounted, string currentPrice, string prevPrice) GetPriceElement(IDocument document, Shops shop)
     {
-        //Megatechnica
-        
-        var pricesDivMega = document.QuerySelector("div.prices");
-        var prevPrice = pricesDivMega!.QuerySelector("span.prev_price");
-        var currentPrice = pricesDivMega!.QuerySelector("span.price");
+        if (shop == Shops.Megatechnica)
+        {
+            var pricesDivMega = document.QuerySelector("div.prices");
+            var prevPrice = pricesDivMega!.QuerySelector("span.prev_price")?.TextContent.Trim() ?? "";
+            var prevPriceTrimmed = System.Text.RegularExpressions.Regex.Replace(prevPrice, @"[^\d]", "");
+            var currentPrice = pricesDivMega!.QuerySelector("span.price")?.TextContent.Trim() ?? "";
+            var isDiscounted = prevPrice != "";
 
-        //alta
-        var currentAlta = document.QuerySelector(".ty-price-num");
-        var priceDivAlta = document.QuerySelector(".ty-list-price.ty-nowrap");
+            return (isDiscounted, currentPrice, prevPriceTrimmed);
+        }
 
-        var priceText = priceDivAlta.TextContent;
-        var cleanPrice = System.Text.RegularExpressions.Regex.Replace(priceText, @"[^\d]", "");
-        
-        var isDiscounted = prevPrice != null;
-        return (isDiscounted, currentPrice?.TextContent.Trim() ?? "", prevPrice?.TextContent.Trim() ?? "");
+        if (shop == Shops.Alta)
+        {
+            var currentAlta = document.QuerySelector(".ty-price-num")?.TextContent.Trim() ?? "";
+            var prevPriceAlta = document.QuerySelector(".ty-list-price.ty-nowrap")?.TextContent ?? "";
+            var prevPriceTrimmed = System.Text.RegularExpressions.Regex.Replace(prevPriceAlta, @"[^\d]", "");
+            var isDiscounted = prevPriceAlta != "";
+
+            return (isDiscounted, currentAlta, prevPriceTrimmed);
+        }
+
+        if (shop==Shops.Ee)
+        {
+            
+        }
+        throw new NotImplementedException();
     }
 }
