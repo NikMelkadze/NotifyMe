@@ -38,7 +38,17 @@ public class Worker(
 
                 if (item.isDiscounted)
                 {
-                    SendEmail("nmelkadze0@gmail.com", product.Shop, item.currentPrice, item.prevPrice);
+                    string email;
+                        
+                    using (var scope = serviceProvider.CreateScope())
+                    {
+                        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                         email = (await dbContext.User
+                             .Where(x => x.Id == product.UserId)
+                             .Select(x => x.Email)
+                             .FirstOrDefaultAsync(stoppingToken))!;
+                    }
+                    SendEmail(email, product.Shop, item.currentPrice, item.prevPrice);
                 }
                 else
                 {
