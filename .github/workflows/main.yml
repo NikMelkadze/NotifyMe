@@ -1,43 +1,63 @@
-name: NotifyMe
+name: Deploy .NET 8 Application to AWS
 
+# Trigger the workflow on push to main branch (or your desired branch)
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
+  build-and-deploy:
+    runs-on: ubuntu-latest  # Running on the latest Ubuntu runner
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      # Step 1: Checkout the code from your GitHub repository
+      - name: Checkout code
+        uses: actions/checkout@v2  # This action checks out the repository code
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: '7.0' # Adjust the version as needed
+      # Step 2: Set up .NET SDK (specifically .NET 8)
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'  # Install .NET 8 SDK
 
-    - name: Restore dependencies
-      run: dotnet restore
+      # Step 3: Restore .NET dependencies (e.g., NuGet packages)
+      - name: Restore dependencies
+        run: dotnet restore
 
-    - name: Build application
-      run: dotnet build --no-restore --configuration Release
+      # Step 4: Build the .NET application
+      - name: Build the application
+        run: dotnet build --configuration Release
 
-    - name: Run tests
-      run: dotnet test --no-restore --verbosity normal
+      # Step 5: Run tests (optional)
+      - name: Run tests
+        run: dotnet test --configuration Release
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build-and-test
-    if: github.ref == 'refs/heads/main'
+      # Step 6: Publish the .NET application (creates a folder for deployment)
+      - name: Publish the application
+        run: dotnet publish --configuration Release --output ./publish
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      # Step 7: Set up AWS credentials using OIDC (no need for static AWS keys)
+      - name: Set up AWS OIDC credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::248189911861:role/github_actions  # ARN of the IAM role you created
+          aws-region: us-east-1  # AWS region (change it to your desired region)
+          role-session-name: GitHubActionsOIDC  # Unique session name
 
-    - name: Deploy application
-      run: echo "Deploy logic goes here (e.g., upload to Azure, AWS, or a web server)"
+      # Step 8: Deploy to AWS (Example: Deploy to Elastic Beanstalk)
+      - name: Deploy to Elastic Beanstalk
+        run: |
+          # Upload the published .NET app to S3 (or any other AWS service you are using)
+          aws s3 cp ./publish s3://my-bucket-name/my-app/ --recursive
+
+          # Create a new Elastic Beanstalk version and deploy the app
+          aws elasticbeanstalk create-application-version \
+            --application-name MyApp \
+            --version-label $GITHUB_SHA \
+            --source-bundle S3Bucket=my-bucket-name,S3Key=my-app/my-app.zip
+
+          # Deploy the version to Elastic Beanstalk environment
+          aws elasticbeanstalk update-environment \
+            --environment-name MyApp-env \
+            --version-label $GITHUB_SHA
