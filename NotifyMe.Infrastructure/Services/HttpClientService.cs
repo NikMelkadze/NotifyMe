@@ -12,13 +12,13 @@ public class HttpClientService : IHttpClientService
             client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
 
             var response = await client.GetAsync(url);
-            response.EnsureSuccessStatusCode(); 
+            response.EnsureSuccessStatusCode();
 
             return await response.Content.ReadAsStringAsync();
         }
         catch (Exception ex)
         {
-            throw new Exception($"Error fetching HTML: {ex.Message}");
+            throw new Exception($"Error fetching HTML for product {url} : {ex.Message}");
         }
     }
 }

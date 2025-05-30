@@ -1,4 +1,4 @@
-namespace NotifyMe.Application.Enums;
+namespace NotifyMe.Domain.Enums;
 
 public enum Shops
 {

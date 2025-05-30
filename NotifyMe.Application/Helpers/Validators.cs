@@ -1,11 +1,11 @@
 using System.ComponentModel.DataAnnotations;
-using NotifyMe.Application.Enums;
+using NotifyMe.Domain.Enums;
 
 namespace NotifyMe.Application.Helpers;
 
 public static class Validators
 {
-    public static void UrlValidator(string url)
+    public static Shops UrlValidator(string url)
     {
         var domain = GetSecondLevelDomain(url);
         var shops = Enum.GetNames<Shops>();
@@ -14,6 +14,8 @@ public static class Validators
         {
             throw new ValidationException("Wrong Domain");
         }
+
+        return (Shops)Enum.Parse(typeof(Shops), domain);
     }
 
     private static string GetSecondLevelDomain(string url)
@@ -27,7 +29,6 @@ public static class Validators
             if (parts.Length < 2) return "Invalid domain format";
             var secondLevelDomain = parts[parts.Length - 2]; // Get the second-to-last part (example)
             return char.ToUpper(secondLevelDomain[0]) + secondLevelDomain.Substring(1);
-
         }
         catch (UriFormatException)
         {

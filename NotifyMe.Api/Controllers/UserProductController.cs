@@ -11,8 +11,8 @@ public class UserProductController(IUserProductService userProductService) : Con
     [HttpPost("/item")]
     public async Task<ActionResult> SaveProduct([FromBody] string url)
     {
-        var userEmail=User.FindFirstValue(ClaimTypes.NameIdentifier);
-        await userProductService.SaveProduct(url,int.Parse(userEmail!));
+        var userId=User.FindFirstValue(ClaimTypes.NameIdentifier);
+        await userProductService.SaveProduct(url,int.Parse(userId!));
         return Ok();
     }
 } 
