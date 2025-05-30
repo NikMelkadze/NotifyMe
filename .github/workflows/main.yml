@@ -28,6 +28,16 @@ jobs:
     - name: Publish application
       run: dotnet publish -c Release -o ./publish
 
+    - name: Stop app and clean publish folder on EC2
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST_DNS }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          sudo systemctl stop myapp.service
+          rm -rf ${{ secrets.TARGET_DIR }}/*
+
     - name: Copy files to EC2
       uses: appleboy/scp-action@v0.1.7
       with:
@@ -43,5 +53,4 @@ jobs:
         host: ${{ secrets.HOST_DNS }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.EC2_SSH_KEY }}
-        script: |
-          sudo systemctl restart myapp.service
+        script: sudo systemctl start myapp.service
