@@ -23,6 +23,7 @@ public class Worker(
         while (!stoppingToken.IsCancellationRequested)
         {
             List<UserSavedProduct> products;
+            string html;
             using (var scope = serviceProvider.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -31,7 +32,16 @@ public class Worker(
 
             foreach (var product in products)
             {
-                var html = await httpClientService.FetchHtmlFromWeb(product.Url);
+                try
+                {
+                    html = await httpClientService.FetchHtmlFromWeb(product.Url);
+                }
+                catch (Exception e)
+                {
+                    logger.LogInformation(e.ToString());
+                    break;
+                }
+
                 var document = await context.OpenAsync(req => req.Content(html), stoppingToken);
 
                 var item = GetPriceElement(document, product.Shop);
@@ -39,15 +49,16 @@ public class Worker(
                 if (item.isDiscounted)
                 {
                     string email;
-                        
+
                     using (var scope = serviceProvider.CreateScope())
                     {
                         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                         email = (await dbContext.User
-                             .Where(x => x.Id == product.UserId)
-                             .Select(x => x.Email)
-                             .FirstOrDefaultAsync(stoppingToken))!;
+                        email = (await dbContext.User
+                            .Where(x => x.Id == product.UserId)
+                            .Select(x => x.Email)
+                            .FirstOrDefaultAsync(stoppingToken))!;
                     }
+
                     SendEmail(email, product.Shop, item.currentPrice, item.prevPrice);
                 }
                 else
@@ -88,30 +99,30 @@ public class Worker(
             return (isDiscounted, currentAlta, prevPriceTrimmed);
         }
 
-        if (shop==Shops.Ee)
+        if (shop == Shops.Ee)
         {
-            
         }
+
         throw new NotImplementedException();
     }
 
-    private void SendEmail(string userEmail,Shops shop,string currentPrice,string prevPrice)
+    private void SendEmail(string userEmail, Shops shop, string currentPrice, string prevPrice)
     {
         var mail = new MailMessage
         {
             From = new MailAddress("notifymeinformation@gmail.com")
         };
-        
+
         SmtpClient smtpClient = new SmtpClient("smtp.gmail.com", 587)
         {
             Credentials = new NetworkCredential("notifymeinformation@gmail.com", "urog lnsb zjkl wbtn "),
             EnableSsl = true
         };
-        
+
         mail.To.Add(userEmail);
         mail.Subject = $"{shop} - ის ფასდაკლება მოთხოვნილ პროდუქტზე";
-        mail.Body = $"მიმდინარე ფასი: {currentPrice},ძველი ფასი: {prevPrice}" ;
-        
+        mail.Body = $"მიმდინარე ფასი: {currentPrice},ძველი ფასი: {prevPrice}";
+
         smtpClient.Send(mail);
     }
 }
