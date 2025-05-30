@@ -1,63 +1,47 @@
-name: Deploy .NET 8 Application to AWS
+name: Push-to-EC2
 
-# Trigger the workflow on push to main branch (or your desired branch)
 on:
   push:
     branches:
       - main
 
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest  # Running on the latest Ubuntu runner
+  deploy:
+    name: Deploy .NET 8 App to EC2
+    runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the code from your GitHub repository
-      - name: Checkout code
-        uses: actions/checkout@v2  # This action checks out the repository code
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      # Step 2: Set up .NET SDK (specifically .NET 8)
-      - name: Set up .NET 8
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '8.0.x'  # Install .NET 8 SDK
+    - name: Set up .NET 8 SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
 
-      # Step 3: Restore .NET dependencies (e.g., NuGet packages)
-      - name: Restore dependencies
-        run: dotnet restore
+    - name: Restore dependencies
+      run: dotnet restore
 
-      # Step 4: Build the .NET application
-      - name: Build the application
-        run: dotnet build --configuration Release
+    - name: Build application
+      run: dotnet build --configuration Release
 
-      # Step 5: Run tests (optional)
-      - name: Run tests
-        run: dotnet test --configuration Release
+    - name: Publish application
+      run: dotnet publish -c Release -o ./publish
 
-      # Step 6: Publish the .NET application (creates a folder for deployment)
-      - name: Publish the application
-        run: dotnet publish --configuration Release --output ./publish
+    - name: Copy files to EC2
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.HOST_DNS }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        source: "publish/*"
+        target: ${{ secrets.TARGET_DIR }}
 
-      # Step 7: Set up AWS credentials using OIDC (no need for static AWS keys)
-      - name: Set up AWS OIDC credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          role-to-assume: arn:aws:iam::248189911861:role/github_actions  # ARN of the IAM role you created
-          aws-region: us-east-1  # AWS region (change it to your desired region)
-          role-session-name: GitHubActionsOIDC  # Unique session name
-
-      # Step 8: Deploy to AWS (Example: Deploy to Elastic Beanstalk)
-      - name: Deploy to Elastic Beanstalk
-        run: |
-          # Upload the published .NET app to S3 (or any other AWS service you are using)
-          aws s3 cp ./publish s3://my-bucket-name/my-app/ --recursive
-
-          # Create a new Elastic Beanstalk version and deploy the app
-          aws elasticbeanstalk create-application-version \
-            --application-name MyApp \
-            --version-label $GITHUB_SHA \
-            --source-bundle S3Bucket=my-bucket-name,S3Key=my-app/my-app.zip
-
-          # Deploy the version to Elastic Beanstalk environment
-          aws elasticbeanstalk update-environment \
-            --environment-name MyApp-env \
-            --version-label $GITHUB_SHA
+    - name: Restart app on EC2
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST_DNS }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          sudo systemctl restart myapp.service
