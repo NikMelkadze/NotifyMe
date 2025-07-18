@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using NotifyMe.Application.Contracts;
 using NotifyMe.Application.Helpers;
 using NotifyMe.Domain.Entities;
@@ -8,15 +9,15 @@ namespace NotifyMe.Infrastructure.Services;
 
 public class UserProductService(ApplicationDbContext dbContext,IHttpClientService httpClientService) : IUserProductService
 {
-    public async Task SaveProduct(string url, int userId)
+    public async Task SaveProduct(string url, int userId,CancellationToken cancellationToken)
     {
         var shop = Validators.UrlValidator(url);
         
         var response= await httpClientService.FetchHtmlFromWeb(url);
 
-        var name =await httpClientService.GetProductName(response,shop,CancellationToken.None);
+        var name =await httpClientService.GetProductName(response,shop,cancellationToken);
         
-        await dbContext.UserSavedProducts.AddAsync(new UserSavedProduct
+         dbContext.UserSavedProducts.Add(new UserSavedProduct
         {
             IsActive = true,
             Name = name,
@@ -24,6 +25,11 @@ public class UserProductService(ApplicationDbContext dbContext,IHttpClientServic
             UserId = userId,
             Shop = shop
         });
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<UserSavedProduct>> GetProducts(int userId, CancellationToken cancellationToken )
+    {
+        return await dbContext.UserSavedProducts.Where(x => x.UserId == userId).AsNoTracking().ToListAsync(cancellationToken);
     }
 }
