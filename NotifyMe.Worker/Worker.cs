@@ -1,13 +1,10 @@
 using System.Net;
 using System.Net.Mail;
-using AngleSharp;
-using AngleSharp.Dom;
 using Microsoft.EntityFrameworkCore;
 using NotifyMe.Domain.Entities;
 using NotifyMe.Domain.Enums;
 using NotifyMe.Infrastructure.Contracts;
 using NotifyMe.Persistence;
-using Configuration = AngleSharp.Configuration;
 
 namespace NotifyMe.Worker;
 
@@ -18,8 +15,6 @@ public class Worker(
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var config = Configuration.Default;
-        var context = BrowsingContext.New(config);
         while (!stoppingToken.IsCancellationRequested)
         {
             List<UserSavedProduct> products;
@@ -42,9 +37,7 @@ public class Worker(
                     break;
                 }
 
-                var document = await context.OpenAsync(req => req.Content(html), stoppingToken);
-
-                var item = GetPriceElement(document, product.Shop);
+                var item = await httpClientService.GetPriceElements(html, product.Shop, stoppingToken);
 
                 if (item.isDiscounted)
                 {
@@ -74,36 +67,6 @@ public class Worker(
 
             await Task.Delay(5000, stoppingToken);
         }
-    }
-
-    private (bool isDiscounted, string currentPrice, string prevPrice) GetPriceElement(IDocument document, Shops shop)
-    {
-        if (shop == Shops.Megatechnica)
-        {
-            var pricesDivMega = document.QuerySelector("div.prices");
-            var prevPrice = pricesDivMega!.QuerySelector("span.prev_price")?.TextContent.Trim() ?? "";
-            var prevPriceTrimmed = System.Text.RegularExpressions.Regex.Replace(prevPrice, @"[^\d]", "");
-            var currentPrice = pricesDivMega!.QuerySelector("span.price")?.TextContent.Trim() ?? "";
-            var isDiscounted = prevPrice != "";
-
-            return (isDiscounted, currentPrice, prevPriceTrimmed);
-        }
-
-        if (shop == Shops.Alta)
-        {
-            var currentAlta = document.QuerySelector(".ty-price-num")?.TextContent.Trim() ?? "";
-            var prevPriceAlta = document.QuerySelector(".ty-list-price.ty-nowrap")?.TextContent ?? "";
-            var prevPriceTrimmed = System.Text.RegularExpressions.Regex.Replace(prevPriceAlta, @"[^\d]", "");
-            var isDiscounted = prevPriceAlta != "";
-
-            return (isDiscounted, currentAlta, prevPriceTrimmed);
-        }
-
-        if (shop == Shops.Ee)
-        {
-        }
-
-        throw new NotImplementedException();
     }
 
     private void SendEmail(string userEmail, Shops shop, string currentPrice, string prevPrice)
