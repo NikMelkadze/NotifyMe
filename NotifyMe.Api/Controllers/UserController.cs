@@ -20,5 +20,4 @@ public class UserController(IUserRepository userRepository) : Controller
     {
         return Ok(await userRepository.LogIn(loginModel));
     }
-    
 }
