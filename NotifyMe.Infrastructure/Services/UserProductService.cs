@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using NotifyMe.Application.Contracts;
 using NotifyMe.Application.Helpers;
 using NotifyMe.Domain.Entities;
+using NotifyMe.Domain.Enums;
 using NotifyMe.Infrastructure.Contracts;
 using NotifyMe.Persistence;
 
@@ -9,7 +10,7 @@ namespace NotifyMe.Infrastructure.Services;
 
 public class UserProductService(ApplicationDbContext dbContext,IHttpClientService httpClientService) : IUserProductService
 {
-    public async Task SaveProduct(string url, int userId,CancellationToken cancellationToken)
+    public async Task SaveProduct(string url, int userId, NotificationTypes notificationType, CancellationToken cancellationToken)
     {
         var shop = Validators.UrlValidator(url);
         
@@ -23,7 +24,8 @@ public class UserProductService(ApplicationDbContext dbContext,IHttpClientServic
             Name = name,
             Url = url,
             UserId = userId,
-            Shop = shop
+            Shop = shop,
+            NotificationType = notificationType
         });
         await dbContext.SaveChangesAsync(cancellationToken);
     }

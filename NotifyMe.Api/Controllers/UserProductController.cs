@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NotifyMe.Application.Contracts;
 using NotifyMe.Domain.Entities;
+using NotifyMe.Domain.Models;
 
 namespace NotifyMe.Api.Controllers;
 [Authorize]
@@ -10,10 +11,10 @@ namespace NotifyMe.Api.Controllers;
 public class UserProductController(IUserProductService userProductService) : Controller
 {
     [HttpPost]
-    public async Task<ActionResult> SaveProduct([FromBody] string url,CancellationToken cancellationToken)
+    public async Task<ActionResult> SaveProduct([FromBody] AddProductRequest productRequest ,CancellationToken cancellationToken)
     {
         var userId=User.FindFirstValue(ClaimTypes.NameIdentifier);
-        await userProductService.SaveProduct(url,int.Parse(userId!),cancellationToken);
+        await userProductService.SaveProduct(productRequest.Url,int.Parse(userId!),productRequest.NotificationType,cancellationToken);
         return Ok();
     } 
     [HttpGet]
