@@ -11,4 +11,4 @@ public record UserModel(
     [Required] string LastName,
     [Required, Phone, StringLength(9)] string PhoneNumber);
 
-public record LoginModel(string Email, string Password);
+public record LoginModel(string EmailOrPhoneNumber, string Password);

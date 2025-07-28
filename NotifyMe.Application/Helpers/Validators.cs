@@ -5,17 +5,17 @@ namespace NotifyMe.Application.Helpers;
 
 public static class Validators
 {
-    public static Shops UrlValidator(string url)
+    public static Shop UrlValidator(string url)
     {
         var domain = GetSecondLevelDomain(url);
-        var shops = Enum.GetNames<Shops>();
+        var shops = Enum.GetNames<Shop>();
 
         if (!shops.Contains(domain))
         {
             throw new ValidationException("Wrong Domain");
         }
 
-        return (Shops)Enum.Parse(typeof(Shops), domain);
+        return (Shop)Enum.Parse(typeof(Shop), domain);
     }
 
     private static string GetSecondLevelDomain(string url)

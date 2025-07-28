@@ -69,7 +69,7 @@ public class Worker(
         }
     }
 
-    private void SendEmail(string userEmail, Shops shop, string currentPrice, string prevPrice)
+    private void SendEmail(string userEmail, Shop shop, string currentPrice, string prevPrice)
     {
         var mail = new MailMessage
         {
