@@ -1,6 +1,6 @@
 namespace NotifyMe.Domain.Enums;
 
-public enum NotificationTypes
+public enum NotificationType
 {
     Sms,
     Email,

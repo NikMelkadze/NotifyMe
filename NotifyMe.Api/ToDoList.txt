@@ -6,3 +6,4 @@ Add reporting for shops
 My products list +
 Edit products 
 Notification Type for Product +
+Delete product +

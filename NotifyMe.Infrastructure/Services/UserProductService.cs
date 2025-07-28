@@ -10,7 +10,7 @@ namespace NotifyMe.Infrastructure.Services;
 
 public class UserProductService(ApplicationDbContext dbContext,IHttpClientService httpClientService) : IUserProductService
 {
-    public async Task SaveProduct(string url, int userId, NotificationTypes notificationType, CancellationToken cancellationToken)
+    public async Task SaveProduct(string url, int userId, NotificationType notificationType, CancellationToken cancellationToken)
     {
         var shop = Validators.UrlValidator(url);
         
@@ -33,5 +33,11 @@ public class UserProductService(ApplicationDbContext dbContext,IHttpClientServic
     public async Task<IEnumerable<UserSavedProduct>> GetProducts(int userId, CancellationToken cancellationToken )
     {
         return await dbContext.UserSavedProducts.Where(x => x.UserId == userId).AsNoTracking().ToListAsync(cancellationToken);
+    }
+
+    public async Task DeleteProduct(int productId, int userId, CancellationToken cancellationToken)
+    {
+        await dbContext.UserSavedProducts.Where(x => x.UserId == userId && x.Id == productId)
+            .ExecuteDeleteAsync(cancellationToken);
     }
 }

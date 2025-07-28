@@ -33,11 +33,11 @@ public class HttpClientService : IHttpClientService
         }
     }
 
-    public async Task<(bool isDiscounted, string currentPrice, string prevPrice)> GetPriceElements(string html, Shops shop,CancellationToken stoppingToken)
+    public async Task<(bool isDiscounted, string currentPrice, string prevPrice)> GetPriceElements(string html, Shop shop,CancellationToken stoppingToken)
     {
         var document = await _browsingContext.OpenAsync(req => req.Content(html), stoppingToken);
         
-        if (shop == Shops.Megatechnica)
+        if (shop == Shop.Megatechnica)
         {
             var pricesDivMega = document.QuerySelector("div.prices");
             var prevPrice = pricesDivMega!.QuerySelector("span.prev_price")?.TextContent.Trim() ?? "";
@@ -48,7 +48,7 @@ public class HttpClientService : IHttpClientService
             return (isDiscounted, currentPrice, prevPriceTrimmed);
         }
 
-        if (shop == Shops.Alta)
+        if (shop == Shop.Alta)
         {
             var currentAlta = document.QuerySelector(".ty-price-num")?.TextContent.Trim() ?? "";
             var prevPriceAlta = document.QuerySelector(".ty-list-price.ty-nowrap")?.TextContent ?? "";
@@ -58,18 +58,18 @@ public class HttpClientService : IHttpClientService
             return (isDiscounted, currentAlta, prevPriceTrimmed);
         }
 
-        if (shop == Shops.Ee)
+        if (shop == Shop.Ee)
         {
         }
 
         throw new NotImplementedException();
     }
 
-    public async Task<string> GetProductName(string html, Shops shop,CancellationToken stoppingToken)
+    public async Task<string> GetProductName(string html, Shop shop,CancellationToken stoppingToken)
     {
         var document = await _browsingContext.OpenAsync(req => req.Content(html), stoppingToken);
         
-        if (shop == Shops.Megatechnica)
+        if (shop == Shop.Megatechnica)
         {
             var element = document.QuerySelector("meta[property='og:title']");
             return element?.GetAttribute("content") ?? throw new ValidationException("Wrong Domain");

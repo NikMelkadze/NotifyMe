@@ -1,10 +1,10 @@
 using NotifyMe.Domain.Enums;
 
-namespace NotifyMe.Domain.Models;
+namespace NotifyMe.Application.Models;
 
 public class AddProductRequest
 {
     public string Url { get; set; } = null!;
-    public NotificationTypes NotificationType { get; set; }
+    public NotificationType NotificationType { get; set; }
 
 }

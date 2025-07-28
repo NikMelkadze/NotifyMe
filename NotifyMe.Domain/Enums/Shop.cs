@@ -1,6 +1,6 @@
 namespace NotifyMe.Domain.Enums;
 
-public enum Shops
+public enum Shop
 {
     Alta,
     Megatechnica,
