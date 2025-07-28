@@ -1,8 +1,8 @@
 Check Url and Set product name when user enters Url +
 Add subscription
 Add sms send functionality for subscribed user
-mobile number  log in
+mobile number  log in +
 Add reporting for shops
 My products list +
 Edit products 
-Notification Type for Product
+Notification Type for Product +

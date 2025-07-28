@@ -36,7 +36,7 @@ public class UserRepository(ApplicationDbContext dbContext) : IUserRepository
 
     public async Task<string> LogIn(LoginModel loginModel)
     {
-        var user = await dbContext.User.SingleOrDefaultAsync(x => x.Email == loginModel.Email);
+        var user = await dbContext.User.SingleOrDefaultAsync(x => x.Email == loginModel.EmailOrPhoneNumber || x.PhoneNumber== loginModel.EmailOrPhoneNumber);
         if (user is null || !BCrypt.Net.BCrypt.Verify(loginModel.Password, user.PasswordHash))
         {
             throw new UnauthorizedAccessException("Invalid credentials.");
