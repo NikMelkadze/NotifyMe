@@ -40,4 +40,30 @@ public class UserProductService(ApplicationDbContext dbContext,IHttpClientServic
         await dbContext.UserSavedProducts.Where(x => x.UserId == userId && x.Id == productId)
             .ExecuteDeleteAsync(cancellationToken);
     }
+
+    public async Task EditProduct(int productId, int userId, bool? isActive, NotificationType? notificationType,
+        CancellationToken cancellationToken)
+    {
+        var product = await dbContext.UserSavedProducts.FirstOrDefaultAsync(
+            x => x.UserId == userId && x.Id == productId,
+            cancellationToken);
+
+        if (product == null)
+        {
+            throw new ApplicationException("Product Not found");
+        }
+
+        if (isActive != null)
+        {
+            product.IsActive = isActive.Value;
+
+        } 
+        
+        if (notificationType != null)
+        {
+            product.NotificationType = notificationType.Value;
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
 }

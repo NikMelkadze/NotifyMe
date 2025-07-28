@@ -29,11 +29,21 @@ public class UserProductController(IUserProductService userProductService) : Con
     }
 
     [HttpDelete("{id:int}")]
-    public async Task<ActionResult> DeleteProduct([FromRoute]int id,
+    public async Task<ActionResult> DeleteProduct([FromRoute] int id,
         CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         await userProductService.DeleteProduct(id, int.Parse(userId!), cancellationToken);
+        return Ok();
+    }
+
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult> EditProduct([FromRoute] int id, [FromBody] EditProductRequest request,
+        CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        await userProductService.EditProduct(id, int.Parse(userId!), request.IsActive, request.NotificationType,
+            cancellationToken);
         return Ok();
     }
 }
