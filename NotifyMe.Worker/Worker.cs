@@ -13,16 +13,30 @@ public class Worker(
     IServiceProvider serviceProvider,
     IHttpClientService httpClientService) : BackgroundService
 {
+    private readonly TimeSpan _targetTime = new(14, 28, 0);
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
+            var now = DateTime.Now;
+            var nextRunTime = DateTime.Today.Add(_targetTime);
+
+            if (now > nextRunTime)
+                nextRunTime = nextRunTime.AddDays(1);
+
+            var delay = nextRunTime - now;
+            
+            logger.LogInformation($"Next run at {nextRunTime}. Waiting {delay.TotalMinutes} minutes.");
+            await Task.Delay(delay, stoppingToken);
+
+
             List<UserSavedProduct> products;
             string html;
             using (var scope = serviceProvider.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                products = await dbContext.UserSavedProducts.ToListAsync(stoppingToken);
+                products = await dbContext.UserSavedProducts.Where(x => x.IsActive).ToListAsync(stoppingToken);
             }
 
             foreach (var product in products)
@@ -65,7 +79,7 @@ public class Worker(
                 logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
             }
 
-            await Task.Delay(5000, stoppingToken);
+            await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
         }
     }
 
