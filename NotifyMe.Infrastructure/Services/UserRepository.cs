@@ -15,11 +15,11 @@ public class UserRepository(ApplicationDbContext dbContext) : IUserRepository
 {
     public async Task AddUser(UserModel user)
     {
-        var existingUser = await dbContext.User.SingleOrDefaultAsync(x => x.Email == user.Email);
+        var existingUser = await dbContext.User.SingleOrDefaultAsync(x => x.Email == user.Email || x.PhoneNumber== user.PhoneNumber);
 
         if (existingUser is not null)
         {
-            throw new ValidationException($"User with email {user.Email} already exists");
+            throw new ValidationException($"User with email address or phone number already exists");
         }
 
         dbContext.User.Add(new User
