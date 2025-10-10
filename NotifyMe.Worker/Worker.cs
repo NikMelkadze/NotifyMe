@@ -13,7 +13,7 @@ public class Worker(
     IServiceProvider serviceProvider,
     IHttpClientService httpClientService) : BackgroundService
 {
-    private readonly TimeSpan _targetTime = new(14, 28, 0);
+    private readonly TimeSpan _targetTime = new(15, 24, 0);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -29,8 +29,7 @@ public class Worker(
             
             logger.LogInformation($"Next run at {nextRunTime}. Waiting {delay.TotalMinutes} minutes.");
             await Task.Delay(delay, stoppingToken);
-
-
+            
             List<UserSavedProduct> products;
             string html;
             using (var scope = serviceProvider.CreateScope())
@@ -47,7 +46,7 @@ public class Worker(
                 }
                 catch (Exception e)
                 {
-                    logger.LogInformation(e.ToString());
+                    logger.LogInformation(e.ToString(),"Error");
                     break;
                 }
 
@@ -55,6 +54,7 @@ public class Worker(
 
                 if (item.isDiscounted)
                 {
+                    Console.WriteLine($"{product.Shop} - {product.Name} Item is Discounted");
                     string email;
 
                     using (var scope = serviceProvider.CreateScope())
@@ -67,23 +67,20 @@ public class Worker(
                     }
 
                     SendEmail(email, product.Shop, item.currentPrice, item.prevPrice);
+                   
+
                 }
                 else
                 {
-                    Console.WriteLine($"{product.Shop} Item is not Discounted");
+                    Console.WriteLine($"{product.Shop} - {product.Name} Item is not Discounted");
                 }
             }
-
-            if (logger.IsEnabled(LogLevel.Information))
-            {
-                logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-            }
-
             await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
+
         }
     }
 
-    private void SendEmail(string userEmail, Shop shop, string currentPrice, string prevPrice)
+    private static void SendEmail(string userEmail, Shop shop, string currentPrice, string prevPrice)
     {
         var mail = new MailMessage
         {
@@ -101,5 +98,7 @@ public class Worker(
         mail.Body = $"მიმდინარე ფასი: {currentPrice},ძველი ფასი: {prevPrice}";
 
         smtpClient.Send(mail);
+        Console.WriteLine($"Email sent to {userEmail}");
+
     }
 }
