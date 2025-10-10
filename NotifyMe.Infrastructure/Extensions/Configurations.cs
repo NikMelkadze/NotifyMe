@@ -11,6 +11,7 @@ public static class Configurations
     {
         services.AddScoped<IHttpClientService, HttpClientService>();
         services.AddScoped<IUserProductService, UserProductService>();
+        services.AddScoped<IReportService, ReportService>();
         services.AddScoped<IUserRepository, UserRepository>();
     }
 }
