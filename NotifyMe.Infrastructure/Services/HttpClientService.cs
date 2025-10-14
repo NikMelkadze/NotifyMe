@@ -1,31 +1,24 @@
-using System.ComponentModel.DataAnnotations;
-using AngleSharp;
-using NotifyMe.Domain.Enums;
+using System.Diagnostics;
+using System.Net.Http.Json;
+using NotifyMe.Application.Helpers;
 using NotifyMe.Infrastructure.Contracts;
+using NotifyMe.Infrastructure.Models.ApiResponse;
 
 namespace NotifyMe.Infrastructure.Services;
 
 public class HttpClientService : IHttpClientService
 {
-    private readonly IBrowsingContext _browsingContext;
-
-    public HttpClientService()
-    {
-        var configuration = Configuration.Default;
-        _browsingContext = BrowsingContext.New(configuration);
-    }
-
-    public async Task<string> FetchHtmlFromWeb(string url)
+    public async Task<string> GetHtml(string url, CancellationToken cancellationToken)
     {
         try
         {
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
 
-            var response = await client.GetAsync(url);
+            var response = await client.GetAsync(url, cancellationToken);
             response.EnsureSuccessStatusCode();
 
-            return await response.Content.ReadAsStringAsync();
+            return await response.Content.ReadAsStringAsync(cancellationToken);
         }
         catch (Exception ex)
         {
@@ -33,48 +26,41 @@ public class HttpClientService : IHttpClientService
         }
     }
 
-    public async Task<(bool isDiscounted, string currentPrice, string prevPrice)> GetPriceElements(string html, Shop shop,CancellationToken stoppingToken)
+    public async Task<ProductBase> GetProductJson(string url, CancellationToken cancellationToken)
     {
-        var document = await _browsingContext.OpenAsync(req => req.Content(html), stoppingToken);
-        
-        if (shop == Shop.Megatechnica)
+        try
         {
-            var pricesDivMega = document.QuerySelector("div.prices");
-            var prevPrice = pricesDivMega!.QuerySelector("span.prev_price")?.TextContent.Trim() ?? "";
-            var prevPriceTrimmed = System.Text.RegularExpressions.Regex.Replace(prevPrice, @"[^\d]", "");
-            var currentPrice = pricesDivMega!.QuerySelector("span.price")?.TextContent.Trim() ?? "";
-            var isDiscounted = prevPrice != "";
+            var apiUrl = ConvertToApiUrl(url);
 
-            return (isDiscounted, currentPrice, prevPriceTrimmed);
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+
+            var response = await client.GetAsync(apiUrl, cancellationToken);
+            response.EnsureSuccessStatusCode();
+
+            return (await response.Content.ReadFromJsonAsync<ProductBase>(cancellationToken: cancellationToken))!;
         }
-
-        if (shop == Shop.Alta)
+        catch (Exception ex)
         {
-            var currentAlta = document.QuerySelector(".ty-price-num")?.TextContent.Trim() ?? "";
-            var prevPriceAlta = document.QuerySelector(".ty-list-price.ty-nowrap")?.TextContent ?? "";
-            var prevPriceTrimmed = System.Text.RegularExpressions.Regex.Replace(prevPriceAlta, @"[^\d]", "");
-            var isDiscounted = prevPriceAlta != "";
-
-            return (isDiscounted, currentAlta, prevPriceTrimmed);
+            throw new Exception($"Error fetching HTML for product {url} : {ex.Message}");
         }
-
-        if (shop == Shop.Ee)
-        {
-        }
-
-        throw new NotImplementedException();
     }
 
-    public async Task<string> GetProductName(string html, Shop shop,CancellationToken stoppingToken)
+    private string ConvertToApiUrl(string url)
     {
-        var document = await _browsingContext.OpenAsync(req => req.Content(html), stoppingToken);
-        
-        if (shop == Shop.Megatechnica)
-        {
-            var element = document.QuerySelector("meta[property='og:title']");
-            return element?.GetAttribute("content") ?? throw new ValidationException("Wrong Domain");
-        }
+        var productId = UrlHelpers.GetProductId(url);
+        var productUrl = productId + UrlHelpers.GetPathAfterDomain(url);
 
-        throw new NotImplementedException();
+        var domain = UrlHelpers.GetSecondLevelDomain(url);
+
+
+        switch (domain)
+        {
+            case "Zoommer":
+                return $"https://api.zoommer.ge/v1/Products/details?productId={productId}&url={productUrl}";
+            case "Ee":
+                return $"https://ee-api.ee.ge/v1/Products/details?productId={productId}&url={productUrl}";
+            default: throw new ArgumentException();
+        }
     }
 }

@@ -4,5 +4,6 @@ public enum Shop
 {
     Alta,
     Megatechnica,
-    Ee
+    Ee,
+    Zoommer
 }

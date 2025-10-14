@@ -7,7 +7,7 @@ public static class Validators
 {
     public static Shop UrlValidator(string url)
     {
-        var domain = GetSecondLevelDomain(url);
+        var domain = UrlHelpers.GetSecondLevelDomain(url);
         var shops = Enum.GetNames<Shop>();
 
         if (!shops.Contains(domain))
@@ -18,21 +18,4 @@ public static class Validators
         return (Shop)Enum.Parse(typeof(Shop), domain);
     }
 
-    private static string GetSecondLevelDomain(string url)
-    {
-        try
-        {
-            var uri = new Uri(url);
-            var host = uri.Host;
-            var parts = host.Split('.');
-
-            if (parts.Length < 2) return "Invalid domain format";
-            var secondLevelDomain = parts[parts.Length - 2]; // Get the second-to-last part (example)
-            return char.ToUpper(secondLevelDomain[0]) + secondLevelDomain.Substring(1);
-        }
-        catch (UriFormatException)
-        {
-            return "Invalid URL";
-        }
-    }
 }
