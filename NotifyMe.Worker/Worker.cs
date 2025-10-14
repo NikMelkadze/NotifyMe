@@ -1,9 +1,11 @@
 using System.Net;
 using System.Net.Mail;
+using AngleSharp;
 using Microsoft.EntityFrameworkCore;
 using NotifyMe.Domain.Entities;
 using NotifyMe.Domain.Enums;
 using NotifyMe.Infrastructure.Contracts;
+using NotifyMe.Infrastructure.Services;
 using NotifyMe.Persistence;
 
 namespace NotifyMe.Worker;
@@ -11,9 +13,10 @@ namespace NotifyMe.Worker;
 public class Worker(
     ILogger<Worker> logger,
     IServiceProvider serviceProvider,
-    IHttpClientService httpClientService) : BackgroundService
+    IHttpClientService httpClientService,
+    IBrowsingContext browsingContext) : BackgroundService
 {
-    private readonly TimeSpan _targetTime = new(15, 24, 0);
+    private readonly TimeSpan _targetTime = new(21, 58, 0);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -31,7 +34,6 @@ public class Worker(
             await Task.Delay(delay, stoppingToken);
             
             List<UserSavedProduct> products;
-            string html;
             using (var scope = serviceProvider.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -40,9 +42,22 @@ public class Worker(
 
             foreach (var product in products)
             {
+                (bool,string,string) discountInfo;
                 try
                 {
-                    html = await httpClientService.FetchHtmlFromWeb(product.Url);
+                    if (product.Shop is Shop.Alta or Shop.Megatechnica)
+                    {
+                        var html = await httpClientService.GetHtml(product.Url,stoppingToken);
+                        var factory = new FetchDataFromHtml(browsingContext);
+                        discountInfo = await factory.GetDiscountInformation(html, product.Shop, stoppingToken);
+                    }
+
+                    else
+                    {
+                        var response = await httpClientService.GetProductJson(product.Url, stoppingToken);
+                        var factory = new FetchDataFromJson();
+                        discountInfo = await factory.GetDiscountInformation(response, product.Shop, stoppingToken);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -50,9 +65,7 @@ public class Worker(
                     break;
                 }
 
-                var item = await httpClientService.GetPriceElements(html, product.Shop, stoppingToken);
-
-                if (item.isDiscounted)
+                if (discountInfo.Item1)
                 {
                     Console.WriteLine($"{product.Shop} - {product.Name} Item is Discounted");
                     string email;
@@ -66,9 +79,7 @@ public class Worker(
                             .FirstOrDefaultAsync(stoppingToken))!;
                     }
 
-                    SendEmail(email, product.Shop, item.currentPrice, item.prevPrice);
-                   
-
+                    SendEmail(email, product.Shop, discountInfo.Item2, discountInfo.Item3);
                 }
                 else
                 {

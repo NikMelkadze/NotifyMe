@@ -1,3 +1,4 @@
+using AngleSharp;
 using Microsoft.Extensions.DependencyInjection;
 using NotifyMe.Application.Contracts;
 using NotifyMe.Infrastructure.Contracts;
@@ -9,6 +10,11 @@ public static class Configurations
 {
     public static void AddInfrastructure(this IServiceCollection services)
     {
+        services.AddSingleton<IBrowsingContext>(sp =>
+        {
+            var configuration = Configuration.Default;
+            return BrowsingContext.New(configuration);
+        });
         services.AddScoped<IHttpClientService, HttpClientService>();
         services.AddScoped<IUserProductService, UserProductService>();
         services.AddScoped<IReportService, ReportService>();
