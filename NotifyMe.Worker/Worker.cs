@@ -16,7 +16,7 @@ public class Worker(
     IHttpClientService httpClientService,
     IBrowsingContext browsingContext) : BackgroundService
 {
-    private readonly TimeSpan _targetTime = new(21, 58, 0);
+    private readonly TimeSpan _targetTime = new(17, 28, 0);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -79,7 +79,7 @@ public class Worker(
                             .FirstOrDefaultAsync(stoppingToken))!;
                     }
 
-                    SendEmail(email, product.Shop, discountInfo.Item2, discountInfo.Item3);
+                    SendEmail(email, product.Name,product.Shop, discountInfo.Item2, discountInfo.Item3);
                 }
                 else
                 {
@@ -91,7 +91,7 @@ public class Worker(
         }
     }
 
-    private static void SendEmail(string userEmail, Shop shop, string currentPrice, string prevPrice)
+    private static void SendEmail(string userEmail,string productName, Shop shop, string currentPrice, string prevPrice)
     {
         var mail = new MailMessage
         {
@@ -106,7 +106,10 @@ public class Worker(
 
         mail.To.Add(userEmail);
         mail.Subject = $"{shop} - ის ფასდაკლება მოთხოვნილ პროდუქტზე";
-        mail.Body = $"მიმდინარე ფასი: {currentPrice},ძველი ფასი: {prevPrice}";
+        
+        mail.Body = $"დასახელება:{productName},\n" +
+                    $"მიმდინარე ფასი: {currentPrice},\n" +
+                    $"ძველი ფასი: {prevPrice}";
 
         smtpClient.Send(mail);
         Console.WriteLine($"Email sent to {userEmail}");
