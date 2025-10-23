@@ -1,6 +1,7 @@
 using AngleSharp;
 using Microsoft.Extensions.DependencyInjection;
 using NotifyMe.Application.Contracts;
+using NotifyMe.Domain.Entities;
 using NotifyMe.Infrastructure.Contracts;
 using NotifyMe.Infrastructure.Services;
 
@@ -19,5 +20,6 @@ public static class Configurations
         services.AddScoped<IUserProductService, UserProductService>();
         services.AddScoped<IReportService, ReportService>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ISubscriptionService, SubscriptionService>();
     }
 }

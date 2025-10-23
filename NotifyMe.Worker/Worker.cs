@@ -73,7 +73,7 @@ public class Worker(
                     using (var scope = serviceProvider.CreateScope())
                     {
                         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                        email = (await dbContext.User
+                        email = (await dbContext.Users
                             .Where(x => x.Id == product.UserId)
                             .Select(x => x.Email)
                             .FirstOrDefaultAsync(stoppingToken))!;

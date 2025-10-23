@@ -15,14 +15,14 @@ public class UserRepository(ApplicationDbContext dbContext) : IUserRepository
 {
     public async Task AddUser(UserModel user)
     {
-        var existingUser = await dbContext.User.SingleOrDefaultAsync(x => x.Email == user.Email || x.PhoneNumber== user.PhoneNumber);
+        var existingUser = await dbContext.Users.SingleOrDefaultAsync(x => x.Email == user.Email || x.PhoneNumber== user.PhoneNumber);
 
         if (existingUser is not null)
         {
             throw new ValidationException($"User with email address or phone number already exists");
         }
 
-        dbContext.User.Add(new User
+        dbContext.Users.Add(new User
         {
             FirstName = user.FirstName,
             LastName = user.LastName,
@@ -36,7 +36,7 @@ public class UserRepository(ApplicationDbContext dbContext) : IUserRepository
 
     public async Task<string> LogIn(LoginModel loginModel)
     {
-        var user = await dbContext.User.SingleOrDefaultAsync(x => x.Email == loginModel.EmailOrPhoneNumber || x.PhoneNumber== loginModel.EmailOrPhoneNumber);
+        var user = await dbContext.Users.SingleOrDefaultAsync(x => x.Email == loginModel.EmailOrPhoneNumber || x.PhoneNumber== loginModel.EmailOrPhoneNumber);
         if (user is null || !BCrypt.Net.BCrypt.Verify(loginModel.Password, user.PasswordHash))
         {
             throw new UnauthorizedAccessException("Invalid credentials.");

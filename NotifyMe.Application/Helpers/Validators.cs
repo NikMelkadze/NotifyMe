@@ -17,5 +17,4 @@ public static class Validators
 
         return (Shop)Enum.Parse(typeof(Shop), domain);
     }
-
 }

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using AngleSharp;
 using Microsoft.EntityFrameworkCore;
 using NotifyMe.Application.Contracts;
@@ -12,12 +13,18 @@ namespace NotifyMe.Infrastructure.Services;
 public class UserProductService(
     ApplicationDbContext dbContext,
     IHttpClientService httpClientService,
+    ISubscriptionService subscriptionService,
     IBrowsingContext browsingContext)
     : IUserProductService
 {
     public async Task SaveProduct(string url, int userId, NotificationType notificationType,
         CancellationToken cancellationToken)
     {
+        if (!await CanAddProduct(userId, 3, cancellationToken))
+        {
+            throw new ValidationException("User has reached the maximum amount of product");
+        }
+        
         var shop = Validators.UrlValidator(url);
 
         string shopName;
@@ -63,6 +70,11 @@ public class UserProductService(
     public async Task EditProduct(int productId, int userId, bool? isActive, NotificationType? notificationType,
         CancellationToken cancellationToken)
     {
+        if (!await CanAddProduct(userId, 3, cancellationToken))
+        {
+            throw new ValidationException("User has reached the maximum amount of product");
+        }
+        
         var product = await dbContext.UserSavedProducts.FirstOrDefaultAsync(
             x => x.UserId == userId && x.Id == productId,
             cancellationToken);
@@ -83,5 +95,16 @@ public class UserProductService(
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<bool> CanAddProduct(int userId, int productLimit, CancellationToken cancellationToken)
+    {
+        if (await subscriptionService.IsUserSubscribed(userId,cancellationToken)) return true;
+        
+        var productCount = await dbContext.UserSavedProducts.AsNoTracking()
+            .CountAsync(x => x.UserId == userId && x.IsActive, cancellationToken);
+
+        return productCount < productLimit;
+
     }
 }
