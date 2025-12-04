@@ -1,3 +1,2 @@
 Add subscription
 Add sms send functionality for subscribed user
-Add reporting for shops +
