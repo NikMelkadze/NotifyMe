@@ -4,17 +4,126 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <PublishTrimmed>false</PublishTrimmed>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="AngleSharp" Version="1.1.2" />
-      <PackageReference Include="BCrypt.Net" Version="0.1.0" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+        <PackageReference Include="AngleSharp" Version="1.1.2"/>
+        <PackageReference Include="BCrypt.Net" Version="0.1.0"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\NotifyMe.Application\NotifyMe.Application.csproj" />
-      <ProjectReference Include="..\NotifyMe.Persistence\NotifyMe.Persistence.csproj" />
+        <ProjectReference Include="..\NotifyMe.Application\NotifyMe.Application.csproj"/>
+        <ProjectReference Include="..\NotifyMe.Persistence\NotifyMe.Persistence.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="publish\zh-Hant\Microsoft.CodeAnalysis.Workspaces.resources.dll"/>
+        <None Remove="publish\zh-Hant\Microsoft.CodeAnalysis.CSharp.resources.dll"/>
+        <None Remove="publish\zh-Hans\Microsoft.CodeAnalysis.resources.dll"/>
+        <None Remove="publish\zh-Hans\Microsoft.CodeAnalysis.Workspaces.resources.dll"/>
+        <None Remove="publish\zh-Hans\Microsoft.CodeAnalysis.CSharp.resources.dll"/>
+        <None Remove="publish\tr\Microsoft.CodeAnalysis.resources.dll"/>
+        <None Remove="publish\tr\Microsoft.CodeAnalysis.Workspaces.resources.dll"/>
+        <None Remove="publish\tr\Microsoft.CodeAnalysis.CSharp.resources.dll"/>
+        <None Remove="publish\runtimes\win\lib\net6.0\System.Windows.Extensions.dll"/>
+        <None Remove="publish\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll"/>
+        <None Remove="publish\runtimes\win\lib\net6.0\System.Runtime.Caching.dll"/>
+        <None Remove="publish\runtimes\win\lib\net6.0\System.Drawing.Common.dll"/>
+        <None Remove="publish\runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll"/>
+        <None Remove="publish\runtimes\unix\lib\net6.0\System.Drawing.Common.dll"/>
+        <None Remove="publish\ru\Microsoft.CodeAnalysis.resources.dll"/>
+        <None Remove="publish\ru\Microsoft.CodeAnalysis.Workspaces.resources.dll"/>
+        <None Remove="publish\ru\Microsoft.CodeAnalysis.CSharp.resources.dll"/>
+        <None Remove="publish\pt-BR\Microsoft.CodeAnalysis.resources.dll"/>
+        <None Remove="publish\pt-BR\Microsoft.CodeAnalysis.Workspaces.resources.dll"/>
+        <None Remove="publish\pt-BR\Microsoft.CodeAnalysis.CSharp.resources.dll"/>
+        <None Remove="publish\pl\Microsoft.CodeAnalysis.resources.dll"/>
+        <None Remove="publish\pl\Microsoft.CodeAnalysis.Workspaces.resources.dll"/>
+        <None Remove="publish\pl\Microsoft.CodeAnalysis.CSharp.resources.dll"/>
+        <None Remove="publish\ko\Microsoft.CodeAnalysis.resources.dll"/>
+        <None Remove="publish\ko\Microsoft.CodeAnalysis.Workspaces.resources.dll"/>
+        <None Remove="publish\ko\Microsoft.CodeAnalysis.CSharp.resources.dll"/>
+        <None Remove="publish\ja\Microsoft.CodeAnalysis.resources.dll"/>
+        <None Remove="publish\ja\Microsoft.CodeAnalysis.Workspaces.resources.dll"/>
+        <None Remove="publish\ja\Microsoft.CodeAnalysis.CSharp.resources.dll"/>
+        <None Remove="publish\it\Microsoft.CodeAnalysis.resources.dll"/>
+        <None Remove="publish\it\Microsoft.CodeAnalysis.Workspaces.resources.dll"/>
+        <None Remove="publish\it\Microsoft.CodeAnalysis.CSharp.resources.dll"/>
+        <None Remove="publish\fr\Microsoft.CodeAnalysis.resources.dll"/>
+        <None Remove="publish\fr\Microsoft.CodeAnalysis.Workspaces.resources.dll"/>
+        <None Remove="publish\fr\Microsoft.CodeAnalysis.CSharp.resources.dll"/>
+        <None Remove="publish\es\Microsoft.CodeAnalysis.resources.dll"/>
+        <None Remove="publish\es\Microsoft.CodeAnalysis.Workspaces.resources.dll"/>
+        <None Remove="publish\es\Microsoft.CodeAnalysis.CSharp.resources.dll"/>
+        <None Remove="publish\de\Microsoft.CodeAnalysis.resources.dll"/>
+        <None Remove="publish\de\Microsoft.CodeAnalysis.Workspaces.resources.dll"/>
+        <None Remove="publish\de\Microsoft.CodeAnalysis.CSharp.resources.dll"/>
+        <None Remove="publish\cs\Microsoft.CodeAnalysis.resources.dll"/>
+        <None Remove="publish\cs\Microsoft.CodeAnalysis.Workspaces.resources.dll"/>
+        <None Remove="publish\cs\Microsoft.CodeAnalysis.CSharp.resources.dll"/>
+        <None Remove="publish\System.Windows.Extensions.dll"/>
+        <None Remove="publish\System.Security.Permissions.dll"/>
+        <None Remove="publish\System.Security.Cryptography.ProtectedData.dll"/>
+        <None Remove="publish\System.Runtime.Caching.dll"/>
+        <None Remove="publish\System.Memory.Data.dll"/>
+        <None Remove="publish\System.IdentityModel.Tokens.Jwt.dll"/>
+        <None Remove="publish\System.IO.Pipelines.dll"/>
+        <None Remove="publish\System.Drawing.Common.dll"/>
+        <None Remove="publish\System.Configuration.ConfigurationManager.dll"/>
+        <None Remove="publish\System.Composition.TypedParts.dll"/>
+        <None Remove="publish\System.Composition.Runtime.dll"/>
+        <None Remove="publish\System.Composition.Hosting.dll"/>
+        <None Remove="publish\System.Composition.Convention.dll"/>
+        <None Remove="publish\System.Composition.AttributedModel.dll"/>
+        <None Remove="publish\System.CodeDom.dll"/>
+        <None Remove="publish\System.ClientModel.dll"/>
+        <None Remove="publish\NotifyMe.Persistence.pdb"/>
+        <None Remove="publish\NotifyMe.Persistence.dll"/>
+        <None Remove="publish\NotifyMe.Infrastructure.pdb"/>
+        <None Remove="publish\NotifyMe.Infrastructure.dll"/>
+        <None Remove="publish\NotifyMe.Infrastructure.deps.json"/>
+        <None Remove="publish\NotifyMe.Domain.pdb"/>
+        <None Remove="publish\NotifyMe.Domain.dll"/>
+        <None Remove="publish\NotifyMe.Application.pdb"/>
+        <None Remove="publish\NotifyMe.Application.dll"/>
+        <None Remove="publish\Mono.TextTemplating.dll"/>
+        <None Remove="publish\Microsoft.Win32.SystemEvents.dll"/>
+        <None Remove="publish\Microsoft.SqlServer.Server.dll"/>
+        <None Remove="publish\Microsoft.IdentityModel.Tokens.dll"/>
+        <None Remove="publish\Microsoft.IdentityModel.Protocols.dll"/>
+        <None Remove="publish\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll"/>
+        <None Remove="publish\Microsoft.IdentityModel.Logging.dll"/>
+        <None Remove="publish\Microsoft.IdentityModel.JsonWebTokens.dll"/>
+        <None Remove="publish\Microsoft.IdentityModel.Abstractions.dll"/>
+        <None Remove="publish\Microsoft.Identity.Client.dll"/>
+        <None Remove="publish\Microsoft.Identity.Client.Extensions.Msal.dll"/>
+        <None Remove="publish\Microsoft.Extensions.Primitives.dll"/>
+        <None Remove="publish\Microsoft.Extensions.Options.dll"/>
+        <None Remove="publish\Microsoft.Extensions.Logging.dll"/>
+        <None Remove="publish\Microsoft.Extensions.Logging.Abstractions.dll"/>
+        <None Remove="publish\Microsoft.Extensions.DependencyModel.dll"/>
+        <None Remove="publish\Microsoft.Extensions.DependencyInjection.dll"/>
+        <None Remove="publish\Microsoft.Extensions.DependencyInjection.Abstractions.dll"/>
+        <None Remove="publish\Microsoft.Extensions.Configuration.Abstractions.dll"/>
+        <None Remove="publish\Microsoft.Extensions.Caching.Memory.dll"/>
+        <None Remove="publish\Microsoft.Extensions.Caching.Abstractions.dll"/>
+        <None Remove="publish\Microsoft.EntityFrameworkCore.dll"/>
+        <None Remove="publish\Microsoft.EntityFrameworkCore.SqlServer.dll"/>
+        <None Remove="publish\Microsoft.EntityFrameworkCore.Relational.dll"/>
+        <None Remove="publish\Microsoft.EntityFrameworkCore.Design.dll"/>
+        <None Remove="publish\Microsoft.EntityFrameworkCore.Abstractions.dll"/>
+        <None Remove="publish\Microsoft.Data.SqlClient.dll"/>
+        <None Remove="publish\Microsoft.CodeAnalysis.dll"/>
+        <None Remove="publish\Microsoft.CodeAnalysis.Workspaces.dll"/>
+        <None Remove="publish\Microsoft.CodeAnalysis.CSharp.dll"/>
+        <None Remove="publish\Microsoft.CodeAnalysis.CSharp.Workspaces.dll"/>
+        <None Remove="publish\Microsoft.Bcl.AsyncInterfaces.dll"/>
+        <None Remove="publish\BCrypt.Net.dll"/>
+        <None Remove="publish\Azure.Identity.dll"/>
+        <None Remove="publish\Azure.Core.dll"/>
+        <None Remove="publish\AngleSharp.dll"/>
     </ItemGroup>
 
 </Project>

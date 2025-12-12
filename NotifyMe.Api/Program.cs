@@ -67,8 +67,8 @@ var app = builder.Build();
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers();
 app.UseSwagger();
+app.MapControllers();
 app.UseSwaggerUI(); 
 
 app.Run();
