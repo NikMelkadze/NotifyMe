@@ -63,8 +63,6 @@ builder.Services.AddAuthentication(options =>
     });
 builder.Services.AddAuthorization();
 
-var app = builder.Build();
-
 var allowedOrigins = builder.Configuration
     .GetSection("Cors:AllowedOrigins")
     .Get<string[]>() ?? [];
@@ -79,12 +77,15 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod();
     });
 });
+var app = builder.Build();
 
+app.UseHttpsRedirection(); // recommended
+app.UseRouting();
 app.UseCors("AppCors");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseSwagger();
+app.UseSwaggerUI();
 app.MapControllers();
-app.UseSwaggerUI(); 
 
 app.Run();
