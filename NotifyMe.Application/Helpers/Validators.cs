@@ -1,5 +1,5 @@
-using System.ComponentModel.DataAnnotations;
 using NotifyMe.Domain.Enums;
+using NotifyMe.Domain.Exceptions;
 
 namespace NotifyMe.Application.Helpers;
 

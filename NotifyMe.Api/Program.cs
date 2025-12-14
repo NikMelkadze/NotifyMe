@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using NotifyMe.Api.Middlewares;
 using NotifyMe.Infrastructure.Extensions;
 using NotifyMe.Persistence;
 
@@ -12,6 +13,9 @@ builder.Services.AddControllers();
 builder.Services.AddInfrastructure();
 
 builder.Services.AddDatabase(builder.Configuration.GetConnectionString("ConnStr")!);
+
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<ApiExceptionHandler>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -79,7 +83,8 @@ builder.Services.AddCors(options =>
 });
 var app = builder.Build();
 
-app.UseHttpsRedirection(); // recommended
+app.UseExceptionHandler();
+app.UseHttpsRedirection();
 app.UseRouting();
 app.UseCors("AppCors");
 app.UseAuthentication();

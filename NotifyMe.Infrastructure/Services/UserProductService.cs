@@ -4,6 +4,7 @@ using NotifyMe.Application.Contracts;
 using NotifyMe.Application.Helpers;
 using NotifyMe.Domain.Entities;
 using NotifyMe.Domain.Enums;
+using NotifyMe.Domain.Exceptions;
 using NotifyMe.Infrastructure.Contracts;
 using NotifyMe.Persistence;
 
@@ -69,7 +70,7 @@ public class UserProductService(
 
         if (product == null)
         {
-            throw new ApplicationException("Product Not found");
+            throw new NotFoundException("Product Not found");
         }
 
         if (isActive != null)

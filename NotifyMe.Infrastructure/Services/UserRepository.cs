@@ -8,6 +8,7 @@ using NotifyMe.Application.Contracts;
 using NotifyMe.Application.Models;
 using NotifyMe.Domain.Entities;
 using NotifyMe.Persistence;
+using ValidationException = NotifyMe.Domain.Exceptions.ValidationException;
 
 namespace NotifyMe.Infrastructure.Services;
 
@@ -19,7 +20,7 @@ public class UserRepository(ApplicationDbContext dbContext) : IUserRepository
 
         if (existingUser is not null)
         {
-            throw new ValidationException($"User with email address or phone number already exists");
+            throw new ValidationException("User with email address or phone number already exists");
         }
 
         dbContext.User.Add(new User
@@ -37,9 +38,10 @@ public class UserRepository(ApplicationDbContext dbContext) : IUserRepository
     public async Task<string> LogIn(LoginModel loginModel)
     {
         var user = await dbContext.User.SingleOrDefaultAsync(x => x.Email == loginModel.EmailOrPhoneNumber || x.PhoneNumber== loginModel.EmailOrPhoneNumber);
+        
         if (user is null || !BCrypt.Net.BCrypt.Verify(loginModel.Password, user.PasswordHash))
         {
-            throw new UnauthorizedAccessException("Invalid credentials.");
+            throw new Domain.Exceptions.ValidationException("Invalid credentials.");
         }
 
         return GenerateJwtToken(user.Email, user.Id);
