@@ -79,6 +79,7 @@ builder.Services.AddCors(options =>
 });
 var app = builder.Build();
 
+app.UseRouting();
 app.UseCors("AppCors");
 app.UseAuthentication();
 app.UseAuthorization();
