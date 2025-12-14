@@ -79,12 +79,13 @@ builder.Services.AddCors(options =>
 });
 var app = builder.Build();
 
+app.UseHttpsRedirection(); // recommended
 app.UseRouting();
 app.UseCors("AppCors");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseSwagger();
-app.MapControllers();
 app.UseSwaggerUI();
+app.MapControllers();
 
 app.Run();
