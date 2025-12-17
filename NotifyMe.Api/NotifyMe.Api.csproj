@@ -27,6 +27,18 @@
 
     <ItemGroup>
       <None Remove="logs\stdout_20251212183816_16728.log" />
+      <None Remove="logs\stdout_20251214153802_19220.log" />
+      <None Remove="logs\stdout_20251214152609_16536.log" />
+      <None Remove="logs\stdout_20251214152459_16896.log" />
+      <None Remove="logs\stdout_20251214150859_5892.log" />
+      <None Remove="logs\stdout_20251214150743_15368.log" />
+      <None Remove="logs\stdout_20251214145024_12196.log" />
+      <None Remove="logs\stdout_20251214144205_19464.log" />
+      <None Remove="logs\stdout_20251214144132_19480.log" />
+      <None Remove="logs\stdout_20251214144014_14272.log" />
+      <None Remove="logs\stdout_20251214143827_13416.log" />
+      <None Remove="logs\stdout_20251214143711_19148.log" />
+      <None Remove="logs\stdout_20251214143558_19768.log" />
     </ItemGroup>
 
     <ItemGroup>

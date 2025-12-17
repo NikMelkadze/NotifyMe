@@ -1,6 +1,6 @@
-using System.Diagnostics;
 using System.Net.Http.Json;
 using NotifyMe.Application.Helpers;
+using NotifyMe.Domain.Exceptions;
 using NotifyMe.Infrastructure.Contracts;
 using NotifyMe.Infrastructure.Models.ApiResponse;
 
@@ -53,14 +53,13 @@ public class HttpClientService : IHttpClientService
 
         var domain = UrlHelpers.GetSecondLevelDomain(url);
 
-
         switch (domain)
         {
             case "Zoommer":
                 return $"https://api.zoommer.ge/v1/Products/details?productId={productId}&url={productUrl}";
             case "Ee":
                 return $"https://ee-api.ee.ge/v1/Products/details?productId={productId}&url={productUrl}";
-            default: throw new ArgumentException();
+            default: throw new ValidationException("Could not convert to Api url");
         }
     }
 }

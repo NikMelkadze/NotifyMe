@@ -1,13 +1,12 @@
-using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NotifyMe.Application.Contracts;
 using NotifyMe.Application.Models;
 using NotifyMe.Domain.Entities;
 using NotifyMe.Persistence;
+using ValidationException = NotifyMe.Domain.Exceptions.ValidationException;
 
 namespace NotifyMe.Infrastructure.Services;
 
@@ -19,7 +18,7 @@ public class UserRepository(ApplicationDbContext dbContext) : IUserRepository
 
         if (existingUser is not null)
         {
-            throw new ValidationException($"User with email address or phone number already exists");
+            throw new ValidationException("User with email address or phone number already exists");
         }
 
         dbContext.User.Add(new User
@@ -37,9 +36,10 @@ public class UserRepository(ApplicationDbContext dbContext) : IUserRepository
     public async Task<string> LogIn(LoginModel loginModel)
     {
         var user = await dbContext.User.SingleOrDefaultAsync(x => x.Email == loginModel.EmailOrPhoneNumber || x.PhoneNumber== loginModel.EmailOrPhoneNumber);
+        
         if (user is null || !BCrypt.Net.BCrypt.Verify(loginModel.Password, user.PasswordHash))
         {
-            throw new UnauthorizedAccessException("Invalid credentials.");
+            throw new ValidationException("Invalid credentials.");
         }
 
         return GenerateJwtToken(user.Email, user.Id);
@@ -48,7 +48,7 @@ public class UserRepository(ApplicationDbContext dbContext) : IUserRepository
     private string GenerateJwtToken(string email, int userId)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes("app-secret-key-notify-strong-token");
+        var key = "app-secret-key-notify-strong-token"u8.ToArray();
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(new[]
