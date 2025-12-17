@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using NotifyMe.Domain.Exceptions;
 
 namespace NotifyMe.Application.Helpers;
 
@@ -25,7 +26,7 @@ public static class UrlHelpers
     public static string GetPathAfterDomain(string url)
     {
         if (string.IsNullOrWhiteSpace(url))
-            throw new ArgumentException("URL cannot be null or empty.", nameof(url));
+            throw new ValidationException("URL cannot be null or empty.");
 
         var uri = new Uri(url);
 
@@ -36,7 +37,7 @@ public static class UrlHelpers
     public static string GetProductId(string url)
     {
         if (string.IsNullOrWhiteSpace(url))
-            throw new ArgumentException("URL cannot be null or empty.", nameof(url));
+            throw new ValidationException("URL cannot be null or empty.");
 
         var uri = new Uri(url);
 
@@ -46,7 +47,7 @@ public static class UrlHelpers
         if (match.Success)
             return match.Groups[1].Value;
 
-        throw new InvalidOperationException("Product ID not found in URL.");
+        throw new ValidationException("Product ID not found in URL.");
     }
 
 }

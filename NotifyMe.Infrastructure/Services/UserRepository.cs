@@ -1,7 +1,5 @@
-using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NotifyMe.Application.Contracts;
@@ -41,7 +39,7 @@ public class UserRepository(ApplicationDbContext dbContext) : IUserRepository
         
         if (user is null || !BCrypt.Net.BCrypt.Verify(loginModel.Password, user.PasswordHash))
         {
-            throw new Domain.Exceptions.ValidationException("Invalid credentials.");
+            throw new ValidationException("Invalid credentials.");
         }
 
         return GenerateJwtToken(user.Email, user.Id);
@@ -50,7 +48,7 @@ public class UserRepository(ApplicationDbContext dbContext) : IUserRepository
     private string GenerateJwtToken(string email, int userId)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes("app-secret-key-notify-strong-token");
+        var key = "app-secret-key-notify-strong-token"u8.ToArray();
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(new[]

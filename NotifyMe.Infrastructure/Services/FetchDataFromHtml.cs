@@ -1,7 +1,7 @@
-using System.ComponentModel.DataAnnotations;
 using AngleSharp;
 using NotifyMe.Domain.Enums;
 using NotifyMe.Infrastructure.Contracts;
+using ValidationException = NotifyMe.Domain.Exceptions.ValidationException;
 
 namespace NotifyMe.Infrastructure.Services;
 
