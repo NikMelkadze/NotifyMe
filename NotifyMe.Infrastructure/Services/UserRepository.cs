@@ -14,6 +14,11 @@ public class UserRepository(ApplicationDbContext dbContext) : IUserRepository
 {
     public async Task AddUser(UserModel user)
     {
+        if (user.Password != user.ConfirmPassword)
+        {
+            throw new ValidationException("Password and re-entered password do not match");
+        }
+        
         var existingUser = await dbContext.User.SingleOrDefaultAsync(x => x.Email == user.Email || x.PhoneNumber== user.PhoneNumber);
 
         if (existingUser is not null)

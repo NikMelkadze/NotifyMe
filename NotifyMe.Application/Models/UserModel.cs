@@ -10,6 +10,8 @@ public record UserModel(
         ErrorMessage = "Password must contain at least one uppercase letter and one special character.")]
     [Required]
     string Password,
+    [Required]
+    string ConfirmPassword,
     [Required] string FirstName,
     [Required] string LastName,
     [Required, Phone, StringLength(9, MinimumLength = 9, ErrorMessage = "Phone number must be exactly 9 digits.")]
