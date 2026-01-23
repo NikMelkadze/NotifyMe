@@ -35,15 +35,15 @@ public class FetchDataFromHtml(IBrowsingContext browsingContext) : FetchDataFact
             return (isDiscounted, currentPrice, prevPrice);
         }
 
-        if (shop == Shop.Alta)
-        {
-            var currentAlta = document.QuerySelector(".ty-price-num")?.TextContent.Trim() ?? "";
-            var prevPriceAlta = document.QuerySelector(".ty-list-price.ty-nowrap")?.TextContent ?? "";
-            var prevPriceTrimmed = System.Text.RegularExpressions.Regex.Replace(prevPriceAlta, @"[^\d]", "");
-            var isDiscounted = prevPriceAlta != "";
-
-            return (isDiscounted, currentAlta, prevPriceTrimmed);
-        }
+        // if (shop == Shop.Alta)
+        // {
+        //     var currentAlta = document.QuerySelector(".ty-price-num")?.TextContent.Trim() ?? "";
+        //     var prevPriceAlta = document.QuerySelector(".ty-list-price.ty-nowrap")?.TextContent ?? "";
+        //     var prevPriceTrimmed = System.Text.RegularExpressions.Regex.Replace(prevPriceAlta, @"[^\d]", "");
+        //     var isDiscounted = prevPriceAlta != "";
+        //
+        //     return (isDiscounted, currentAlta, prevPriceTrimmed);
+        // }
 
         throw new NotImplementedException();
     }

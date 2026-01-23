@@ -23,7 +23,7 @@ public class UserProductService(
         var shop = Validators.UrlValidator(url);
 
         string productName;
-        if (shop is Shop.Alta or Shop.Megatechnica or Shop.Itworks)
+        if (shop is Shop.Megatechnica or Shop.Itworks)
         {
             var html = await httpClientService.GetHtml(url, cancellationToken);
             var factory = new FetchDataFromHtml(browsingContext);
