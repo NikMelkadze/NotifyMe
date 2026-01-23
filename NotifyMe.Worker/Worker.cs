@@ -86,7 +86,7 @@ public class Worker(
                     Console.WriteLine($"{product.Shop} - {product.Name} Item is not Discounted");
                 }
             }
-            await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
+          //  await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
 
         }
     }
