@@ -2,9 +2,9 @@ namespace NotifyMe.Domain.Enums;
 
 public enum Shop
 {
-    Alta,
-    Megatechnica,
-    Ee,
-    Zoommer,
-    Itworks
+    //Alta=0,
+    Megatechnica=1,
+   // Ee=2,
+   // Zoommer=3,
+    Itworks=4
 }

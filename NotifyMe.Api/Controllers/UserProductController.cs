@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NotifyMe.Application.Contracts;
 using NotifyMe.Application.Models;
-using NotifyMe.Domain.Entities;
+using NotifyMe.Application.Models.UserProducts;
 
 namespace NotifyMe.Api.Controllers;
 
@@ -22,7 +22,7 @@ public class UserProductController(IUserProductService userProductService) : Con
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<UserSavedProduct>>> GetProducts(CancellationToken cancellationToken)
+    public async Task<ActionResult<IEnumerable<UserSavedProductResponse>>> GetProducts(CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         return Ok(await userProductService.GetProducts(int.Parse(userId!), cancellationToken));

@@ -2,6 +2,7 @@ using AngleSharp;
 using Microsoft.EntityFrameworkCore;
 using NotifyMe.Application.Contracts;
 using NotifyMe.Application.Helpers;
+using NotifyMe.Application.Models.UserProducts;
 using NotifyMe.Domain.Entities;
 using NotifyMe.Domain.Enums;
 using NotifyMe.Domain.Exceptions;
@@ -22,7 +23,7 @@ public class UserProductService(
         var shop = Validators.UrlValidator(url);
 
         string productName;
-        if (shop is Shop.Alta or Shop.Megatechnica or Shop.Itworks)
+        if (shop is Shop.Megatechnica or Shop.Itworks)
         {
             var html = await httpClientService.GetHtml(url, cancellationToken);
             var factory = new FetchDataFromHtml(browsingContext);
@@ -49,10 +50,20 @@ public class UserProductService(
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<UserSavedProduct>> GetProducts(int userId, CancellationToken cancellationToken)
+    public async Task<IEnumerable<UserSavedProductResponse>> GetProducts(int userId,
+        CancellationToken cancellationToken)
     {
-        return await dbContext.UserSavedProducts.Where(x => x.UserId == userId).AsNoTracking()
+        var products = await dbContext.UserSavedProducts.Where(x => x.UserId == userId).AsNoTracking()
             .ToListAsync(cancellationToken);
+
+        return products.Select(x => new UserSavedProductResponse
+        {
+            Id = x.Id,
+            Name = x.Name,
+            NotificationType = x.NotificationType.ToString(),
+            IsActive = x.IsActive,
+            Shop = x.Shop.ToString(),
+        }).ToList();
     }
 
     public async Task DeleteProduct(int productId, int userId, CancellationToken cancellationToken)
