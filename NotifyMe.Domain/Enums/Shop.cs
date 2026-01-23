@@ -5,5 +5,6 @@ public enum Shop
     Alta,
     Megatechnica,
     Ee,
-    Zoommer
+    Zoommer,
+    Itworks
 }

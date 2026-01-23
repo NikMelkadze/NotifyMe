@@ -21,19 +21,19 @@ public class UserProductService(
     {
         var shop = Validators.UrlValidator(url);
 
-        string shopName;
-        if (shop is Shop.Alta or Shop.Megatechnica)
+        string productName;
+        if (shop is Shop.Alta or Shop.Megatechnica or Shop.Itworks)
         {
             var html = await httpClientService.GetHtml(url, cancellationToken);
             var factory = new FetchDataFromHtml(browsingContext);
-            shopName = await factory.GetProductName(html, shop, cancellationToken);
+            productName = await factory.GetProductName(html, shop, cancellationToken);
         }
 
         else
         {
             var product = await httpClientService.GetProductJson(url, cancellationToken);
             var factory = new FetchDataFromJson();
-            shopName = await factory.GetProductName(product, shop, cancellationToken);
+            productName = await factory.GetProductName(product, shop, cancellationToken);
         }
 
 
@@ -41,7 +41,7 @@ public class UserProductService(
         {
             Url = url,
             IsActive = true,
-            Name = shopName,
+            Name = productName,
             UserId = userId,
             Shop = shop,
             NotificationType = notificationType
