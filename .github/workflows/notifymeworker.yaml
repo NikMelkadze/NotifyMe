@@ -27,4 +27,5 @@ jobs:
       - name: Run NotifyMe.Worker
         env:
           DOTNET_ENVIRONMENT: Production
-        run: dotnet run --configuration Release --no-build --project ./NotifyMe.Worker/NotifyMe.Worker.csproj
+          ASPNETCORE_ENVIRONMENT: Production
+        run: dotnet run --no-launch-profile --configuration Release --no-build --project ./NotifyMe.Worker/NotifyMe.Worker.csproj
