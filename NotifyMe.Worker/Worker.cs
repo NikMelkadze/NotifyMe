@@ -16,22 +16,22 @@ public class Worker(
     IHttpClientService httpClientService,
     IBrowsingContext browsingContext) : BackgroundService
 {
-    private readonly TimeSpan _targetTime = new(17, 28, 0);
+   // private readonly TimeSpan _targetTime = new(17, 28, 0);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var now = DateTime.Now;
-            var nextRunTime = DateTime.Today.Add(_targetTime);
-
-            if (now > nextRunTime)
-                nextRunTime = nextRunTime.AddDays(1);
-
-            var delay = nextRunTime - now;
-            
-            logger.LogInformation($"Next run at {nextRunTime}. Waiting {delay.TotalMinutes} minutes.");
-            await Task.Delay(delay, stoppingToken);
+            // var now = DateTime.Now;
+            // var nextRunTime = DateTime.Today.Add(_targetTime);
+            //
+            // if (now > nextRunTime)
+            //     nextRunTime = nextRunTime.AddDays(1);
+            //
+            // var delay = nextRunTime - now;
+            //
+            // logger.LogInformation($"Next run at {nextRunTime}. Waiting {delay.TotalMinutes} minutes.");
+            // await Task.Delay(delay, stoppingToken);
             
             List<UserSavedProduct> products;
             using (var scope = serviceProvider.CreateScope())
