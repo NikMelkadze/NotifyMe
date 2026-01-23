@@ -2,10 +2,7 @@ name: NotifyMe.Worker - Daily Run
 
 on:
   schedule:
-    # Runs daily at 20:00 UTC == 00:00 Asia/Tbilisi
-    - cron: "20 17 * * *"
-    
-  # Allows manual trigger from GitHub UI
+    - cron: "30 17 * * *"
   workflow_dispatch:
 
 jobs:
@@ -28,4 +25,6 @@ jobs:
         run: dotnet build --configuration Release --no-restore
 
       - name: Run NotifyMe.Worker
+        env:
+          DOTNET_ENVIRONMENT: Production
         run: dotnet run --configuration Release --no-build --project ./NotifyMe.Worker/NotifyMe.Worker.csproj
