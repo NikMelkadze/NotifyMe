@@ -1,0 +1,31 @@
+name: NotifyMe.Worker - Daily Run
+
+on:
+  schedule:
+    # Runs daily at 20:00 UTC == 00:00 Asia/Tbilisi
+    - cron: "12 17 * * *"
+    
+  # Allows manual trigger from GitHub UI
+  workflow_dispatch:
+
+jobs:
+  run-worker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Run NotifyMe.Worker
+        run: dotnet run --configuration Release --no-build --project ./NotifyMe.Worker/NotifyMe.Worker.csproj
