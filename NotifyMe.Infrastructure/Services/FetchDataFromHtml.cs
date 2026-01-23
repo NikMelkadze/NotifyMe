@@ -22,6 +22,19 @@ public class FetchDataFromHtml(IBrowsingContext browsingContext) : FetchDataFact
             return (isDiscounted, currentPrice, prevPriceTrimmed);
         }
 
+        if (shop == Shop.Itworks)
+        {
+            var pricesDiv = document.QuerySelector("div.prices-container");
+            var currentPriceRaw = pricesDiv?.QuerySelector("#current-price")?.TextContent?.Trim() ?? "";
+            var prevPriceRaw     = pricesDiv?.QuerySelector("#old-price")?.TextContent?.Trim() ?? "";
+            var currentPrice = System.Text.RegularExpressions.Regex.Replace(currentPriceRaw, @"[^\d]", "");
+            var prevPrice     = System.Text.RegularExpressions.Regex.Replace(prevPriceRaw, @"[^\d]", "");
+            
+            var isDiscounted = prevPrice != "";
+
+            return (isDiscounted, currentPrice, prevPrice);
+        }
+
         if (shop == Shop.Alta)
         {
             var currentAlta = document.QuerySelector(".ty-price-num")?.TextContent.Trim() ?? "";
@@ -39,12 +52,8 @@ public class FetchDataFromHtml(IBrowsingContext browsingContext) : FetchDataFact
     {
         var document = await browsingContext.OpenAsync(req => req.Content(product), cancellationToken);
         
-        if (shop == Shop.Megatechnica)
-        {
             var element = document.QuerySelector("meta[property='og:title']");
             return element?.GetAttribute("content") ?? throw new ValidationException("Wrong Domain");
-        }
 
-        throw new NotImplementedException();
     }
 }
