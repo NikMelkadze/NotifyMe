@@ -3,7 +3,7 @@ name: NotifyMe.Worker - Daily Run
 on:
   schedule:
     # Runs daily at 20:00 UTC == 00:00 Asia/Tbilisi
-    - cron: "12 17 * * *"
+    - cron: "20 17 * * *"
     
   # Allows manual trigger from GitHub UI
   workflow_dispatch:
