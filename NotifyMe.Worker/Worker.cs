@@ -37,7 +37,7 @@ public class Worker(
             using (var scope = serviceProvider.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                products = await dbContext.UserSavedProducts.Where(x => x.IsActive).ToListAsync(stoppingToken);
+                products = await dbContext.UserSavedProducts.Where(x => x.IsActive && x.LastNotificationSentAt.Date == DateTime.Today.Date).ToListAsync(stoppingToken);
             }
 
             foreach (var product in products)
@@ -77,9 +77,14 @@ public class Worker(
                             .Where(x => x.Id == product.UserId)
                             .Select(x => x.Email)
                             .FirstOrDefaultAsync(stoppingToken))!;
+                        
+                        SendEmail(email, product.Name,product.Shop, discountInfo.Item2, discountInfo.Item3);
+
+                        dbContext.Attach(product);
+                        product.LastNotificationSentAt = DateTime.Now;
+                        await dbContext.SaveChangesAsync(stoppingToken);
                     }
 
-                    SendEmail(email, product.Name,product.Shop, discountInfo.Item2, discountInfo.Item3);
                 }
                 else
                 {
