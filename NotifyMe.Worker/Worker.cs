@@ -45,7 +45,7 @@ public class Worker(
                 (bool,string,string) discountInfo;
                 try
                 {
-                    if (product.Shop is Shop.Megatechnica or Shop.Itworks)
+                    if (product.Shop is Shop.Megatechnica or Shop.Itworks or Shop.Dressup)
                     {
                         var html = await httpClientService.GetHtml(product.Url,stoppingToken);
                         var factory = new FetchDataFromHtml(browsingContext);

@@ -6,5 +6,6 @@ public enum Shop
     Megatechnica=1,
    // Ee=2,
    // Zoommer=3,
-    Itworks=4
+    Itworks=4,
+    Dressup=5
 }
