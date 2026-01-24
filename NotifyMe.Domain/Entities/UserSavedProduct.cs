@@ -13,4 +13,5 @@ public class UserSavedProduct
     public bool IsActive { get; set; }
     public int UserId { get; set; }
     public Shop Shop { get; set; }
+    public DateTime LastNotificationSentAt { get; set; }
 }

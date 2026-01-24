@@ -35,6 +35,29 @@ public class FetchDataFromHtml(IBrowsingContext browsingContext) : FetchDataFact
             return (isDiscounted, currentPrice, prevPrice);
         }
 
+
+        if (shop == Shop.Dressup)
+        {
+            var pricesRoot = document.QuerySelector(".product-prices");
+
+            var currentPrice = pricesRoot?
+                .QuerySelector(".current-price .product-price[itemprop='price']")
+                ?.GetAttribute("content")
+                ?.Trim() ?? "";
+
+            var oldPriceRaw = pricesRoot?
+                .QuerySelector(".product-discount .regular-price")
+                ?.TextContent.Trim() ?? "";
+
+            var oldPrice = System.Text.RegularExpressions.Regex
+                .Replace(oldPriceRaw, @"[^\d,\.]", "")
+                .Replace(",", ".");
+
+            var isDiscounted = !string.IsNullOrWhiteSpace(oldPrice);
+            
+            return (isDiscounted, currentPrice, oldPrice);
+        }
+
         // if (shop == Shop.Alta)
         // {
         //     var currentAlta = document.QuerySelector(".ty-price-num")?.TextContent.Trim() ?? "";
