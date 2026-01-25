@@ -82,6 +82,7 @@ public class Worker(
 
                         dbContext.Attach(product);
                         product.LastNotificationSentAt = DateTime.Now;
+                        product.SentNotificationCount++;
                         await dbContext.SaveChangesAsync(stoppingToken);
                     }
 
