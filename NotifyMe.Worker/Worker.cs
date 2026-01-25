@@ -14,14 +14,13 @@ public class Worker(
     ILogger<Worker> logger,
     IServiceProvider serviceProvider,
     IHttpClientService httpClientService,
-    IBrowsingContext browsingContext) : BackgroundService
+    IBrowsingContext browsingContext,
+    IHostApplicationLifetime lifetime) : BackgroundService
 {
    // private readonly TimeSpan _targetTime = new(17, 28, 0);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
-        {
             // var now = DateTime.Now;
             // var nextRunTime = DateTime.Today.Add(_targetTime);
             //
@@ -62,7 +61,7 @@ public class Worker(
                 catch (Exception e)
                 {
                     logger.LogInformation(e.ToString(),"Error");
-                    break;
+                    continue;
                 }
 
                 if (discountInfo.Item1)
@@ -92,10 +91,9 @@ public class Worker(
                     Console.WriteLine($"{product.Shop} - {product.Name} Item is not Discounted");
                 }
             }
-            break;
+            lifetime.StopApplication();
           //  await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
-
-        }
+          
     }
 
     private static void SendEmail(string userEmail,string productName, Shop shop, string currentPrice, string prevPrice)
