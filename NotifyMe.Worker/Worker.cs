@@ -37,7 +37,7 @@ public class Worker(
             using (var scope = serviceProvider.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                products = await dbContext.UserSavedProducts.Where(x => x.IsActive && x.LastNotificationSentAt.Date == DateTime.Today.Date).ToListAsync(stoppingToken);
+                products = await dbContext.UserSavedProducts.Where(x => x.IsActive && x.LastNotificationSentAt.Date != DateTime.Today.Date).ToListAsync(stoppingToken);
             }
 
             foreach (var product in products)
@@ -92,6 +92,7 @@ public class Worker(
                     Console.WriteLine($"{product.Shop} - {product.Name} Item is not Discounted");
                 }
             }
+            break;
           //  await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
 
         }
