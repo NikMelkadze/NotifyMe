@@ -14,4 +14,6 @@ public class UserSavedProduct
     public int UserId { get; set; }
     public Shop Shop { get; set; }
     public DateTime LastNotificationSentAt { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public int SentNotificationCount { get; set; }
 }

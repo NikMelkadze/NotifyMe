@@ -45,7 +45,8 @@ public class UserProductService(
             Name = productName,
             UserId = userId,
             Shop = shop,
-            NotificationType = notificationType
+            NotificationType = notificationType,
+            CreatedAt = DateTime.Now
         });
         await dbContext.SaveChangesAsync(cancellationToken);
     }
