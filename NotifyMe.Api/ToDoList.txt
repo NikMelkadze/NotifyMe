@@ -1,4 +1,4 @@
 Add subscription
 Add sms send functionality for subscribed user
 handle secrets
-host worker service
+
