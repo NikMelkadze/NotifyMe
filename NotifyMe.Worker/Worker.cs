@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using NotifyMe.Domain.Entities;
 using NotifyMe.Domain.Enums;
 using NotifyMe.Infrastructure.Contracts;
-using NotifyMe.Infrastructure.Services;
+using NotifyMe.Infrastructure.Models;
+using NotifyMe.Infrastructure.Services.ShopProductServices;
 using NotifyMe.Persistence;
 
 namespace NotifyMe.Worker;
@@ -17,86 +18,109 @@ public class Worker(
     IBrowsingContext browsingContext,
     IHostApplicationLifetime lifetime) : BackgroundService
 {
-   // private readonly TimeSpan _targetTime = new(17, 28, 0);
+    // private readonly TimeSpan _targetTime = new(17, 28, 0);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-            // var now = DateTime.Now;
-            // var nextRunTime = DateTime.Today.Add(_targetTime);
-            //
-            // if (now > nextRunTime)
-            //     nextRunTime = nextRunTime.AddDays(1);
-            //
-            // var delay = nextRunTime - now;
-            //
-            // logger.LogInformation($"Next run at {nextRunTime}. Waiting {delay.TotalMinutes} minutes.");
-            // await Task.Delay(delay, stoppingToken);
-            
-            List<UserSavedProduct> products;
-            using (var scope = serviceProvider.CreateScope())
+        // var now = DateTime.Now;
+        // var nextRunTime = DateTime.Today.Add(_targetTime);
+        //
+        // if (now > nextRunTime)
+        //     nextRunTime = nextRunTime.AddDays(1);
+        //
+        // var delay = nextRunTime - now;
+        //
+        // logger.LogInformation($"Next run at {nextRunTime}. Waiting {delay.TotalMinutes} minutes.");
+        // await Task.Delay(delay, stoppingToken);
+
+        List<UserSavedProduct> products;
+        using (var scope = serviceProvider.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            products = await dbContext.UserSavedProducts
+                .Where(x => x.IsActive && x.LastNotificationSentAt.Date != DateTime.Today.Date)
+                .ToListAsync(stoppingToken);
+        }
+
+        foreach (var product in products)
+        {
+            ProductPriceInformation priceInformation;
+            try
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                products = await dbContext.UserSavedProducts.Where(x => x.IsActive && x.LastNotificationSentAt.Date != DateTime.Today.Date).ToListAsync(stoppingToken);
+                var html = await httpClientService.GetHtml(product.Url, stoppingToken);
+
+                var document = await browsingContext.OpenAsync(req => req.Content(html), stoppingToken);
+
+
+                var factory = new ShopProductFactory();
+                var shopFactory = factory.GetShopFactory(product.Shop);
+
+                priceInformation = shopFactory.GetPriceInformation(document);
+
+                // else
+                // {
+                //     var response = await httpClientService.GetProductJson(product.Url, stoppingToken);
+                //     var factory = new FetchDataFromJson();
+                //     discountInfo = await factory.GetDiscountInformation(response, product.Shop, stoppingToken);
+                // }
+            }
+            catch (Exception e)
+            {
+                logger.LogInformation(e.ToString(), "Error");
+                continue;
             }
 
-            foreach (var product in products)
+            var productCurrentPrice = Convert.ToDouble(priceInformation.CurrentPrice);
+            double? newPrice = null;
+            
+            if (productCurrentPrice != product.InitialPrice)
             {
-                (bool,string,string) discountInfo;
-                try
+                if (productCurrentPrice != product.NewPrice)
                 {
-                    if (product.Shop is Shop.Megatechnica or Shop.Itworks or Shop.Dressup)
-                    {
-                        var html = await httpClientService.GetHtml(product.Url,stoppingToken);
-                        var factory = new FetchDataFromHtml(browsingContext);
-                        discountInfo = await factory.GetDiscountInformation(html, product.Shop, stoppingToken);
-                    }
-
-                    else
-                    {
-                        var response = await httpClientService.GetProductJson(product.Url, stoppingToken);
-                        var factory = new FetchDataFromJson();
-                        discountInfo = await factory.GetDiscountInformation(response, product.Shop, stoppingToken);
-                    }
+                    newPrice = productCurrentPrice;
                 }
-                catch (Exception e)
-                {
-                    logger.LogInformation(e.ToString(),"Error");
-                    continue;
-                }
+            }
+            var hasNewPrice =
+                product.InitialPrice != productCurrentPrice;
 
-                if (discountInfo.Item1)
-                {
-                    Console.WriteLine($"{product.Shop} - {product.Name} Item is Discounted");
-                    string email;
 
-                    using (var scope = serviceProvider.CreateScope())
+            if (priceInformation.IsDiscounted || hasNewPrice)
+            {
+                using (var scope = serviceProvider.CreateScope())
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                    dbContext.Attach(product);
+
+                    if (priceInformation.IsDiscounted)
                     {
-                        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                        email = (await dbContext.User
+                        var email = (await dbContext.User
                             .Where(x => x.Id == product.UserId)
                             .Select(x => x.Email)
                             .FirstOrDefaultAsync(stoppingToken))!;
-                        
-                        SendEmail(email, product.Name,product.Shop, discountInfo.Item2, discountInfo.Item3);
 
-                        dbContext.Attach(product);
+                        SendEmail(email, product.Name, product.Shop, priceInformation.CurrentPrice,
+                            priceInformation.OldPrice!)
+                            ;
                         product.LastNotificationSentAt = DateTime.Now;
                         product.SentNotificationCount++;
-                        await dbContext.SaveChangesAsync(stoppingToken);
                     }
-
-                }
-                else
-                {
-                    Console.WriteLine($"{product.Shop} - {product.Name} Item is not Discounted");
+                    
+                    product.NewPrice = newPrice;
+                    await dbContext.SaveChangesAsync(stoppingToken);
                 }
             }
-            lifetime.StopApplication();
-          //  await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
-          
+            else
+            {
+                Console.WriteLine($"{product.Shop} - {product.Name} Item is not Discounted");
+            }
+        }
+
+        lifetime.StopApplication();
+        //  await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
     }
 
-    private static void SendEmail(string userEmail,string productName, Shop shop, string currentPrice, string prevPrice)
+    private static void SendEmail(string userEmail, string productName, Shop shop, string currentPrice,
+        string prevPrice)
     {
         var mail = new MailMessage
         {
@@ -111,13 +135,12 @@ public class Worker(
 
         mail.To.Add(userEmail);
         mail.Subject = $"{shop} - ის ფასდაკლება მოთხოვნილ პროდუქტზე";
-        
+
         mail.Body = $"დასახელება:{productName},\n" +
                     $"მიმდინარე ფასი: {currentPrice},\n" +
                     $"ძველი ფასი: {prevPrice}";
 
         smtpClient.Send(mail);
         Console.WriteLine($"Email sent to {userEmail}");
-
     }
 }

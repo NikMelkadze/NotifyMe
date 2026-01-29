@@ -7,6 +7,7 @@ using NotifyMe.Domain.Entities;
 using NotifyMe.Domain.Enums;
 using NotifyMe.Domain.Exceptions;
 using NotifyMe.Infrastructure.Contracts;
+using NotifyMe.Infrastructure.Services.ShopProductServices;
 using NotifyMe.Persistence;
 
 namespace NotifyMe.Infrastructure.Services;
@@ -21,22 +22,21 @@ public class UserProductService(
         CancellationToken cancellationToken)
     {
         var shop = Validators.UrlValidator(url);
+        
+        var html = await httpClientService.GetHtml(url, cancellationToken);
+        var document = await browsingContext.OpenAsync(req => req.Content(html), cancellationToken);
 
-        string productName;
-        if (shop is Shop.Megatechnica or Shop.Itworks or Shop.Dressup)
-        {
-            var html = await httpClientService.GetHtml(url, cancellationToken);
-            var factory = new FetchDataFromHtml(browsingContext);
-            productName = await factory.GetProductName(html, shop, cancellationToken);
-        }
+        var factory = new ShopProductFactory();
+        var shopFactory = factory.GetShopFactory(shop);
+        
+        var priceInformation = shopFactory.GetPriceInformation(document);
+        var productName = shopFactory.GetProductName(document);
 
-        else
-        {
-            var product = await httpClientService.GetProductJson(url, cancellationToken);
-            var factory = new FetchDataFromJson();
-            productName = await factory.GetProductName(product, shop, cancellationToken);
-        }
+        var initialPrice = !priceInformation.IsDiscounted ? Convert.ToDouble(priceInformation.CurrentPrice) : Convert.ToDouble(priceInformation.OldPrice);
 
+        // var product = await httpClientService.GetProductJson(url, cancellationToken);
+        // var factory = new FetchDataFromJson();
+        // productName = await factory.GetProductName(product, shop, cancellationToken);
 
         dbContext.UserSavedProducts.Add(new UserSavedProduct
         {
@@ -46,7 +46,8 @@ public class UserProductService(
             UserId = userId,
             Shop = shop,
             NotificationType = notificationType,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.Now,
+            InitialPrice = initialPrice
         });
         await dbContext.SaveChangesAsync(cancellationToken);
     }
