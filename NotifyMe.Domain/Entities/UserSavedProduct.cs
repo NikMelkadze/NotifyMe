@@ -3,10 +3,9 @@ using NotifyMe.Domain.Enums;
 
 namespace NotifyMe.Domain.Entities;
 
-public class UserSavedProduct 
+public class UserSavedProduct
 {
-    [Key]
-    public int Id { get; set; }
+    [Key] public int Id { get; set; }
     public string Url { get; set; } = null!;
     public string Name { get; set; } = null!;
     public NotificationType NotificationType { get; set; }
@@ -16,4 +15,6 @@ public class UserSavedProduct
     public DateTime LastNotificationSentAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public int SentNotificationCount { get; set; }
+    public double InitialPrice { get; set; }
+    public double? NewPrice { get; set; }
 }
