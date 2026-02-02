@@ -15,6 +15,6 @@ public class UserSavedProduct
     public DateTime LastNotificationSentAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public int SentNotificationCount { get; set; }
-    public double InitialPrice { get; set; }
-    public double? NewPrice { get; set; }
+    public decimal InitialPrice { get; set; }
+    public decimal? NewPrice { get; set; }
 }
