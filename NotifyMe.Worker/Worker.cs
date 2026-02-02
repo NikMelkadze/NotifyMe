@@ -70,8 +70,8 @@ public class Worker(
                 continue;
             }
 
-            var productCurrentPrice = Convert.ToDouble(priceInformation.CurrentPrice);
-            double? newPrice = null;
+            var productCurrentPrice = Convert.ToDecimal(priceInformation.CurrentPrice);
+            decimal? newPrice = null;
             
             if (productCurrentPrice != product.InitialPrice)
             {

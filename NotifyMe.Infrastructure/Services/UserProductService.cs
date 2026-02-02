@@ -22,17 +22,19 @@ public class UserProductService(
         CancellationToken cancellationToken)
     {
         var shop = Validators.UrlValidator(url);
-        
+
         var html = await httpClientService.GetHtml(url, cancellationToken);
         var document = await browsingContext.OpenAsync(req => req.Content(html), cancellationToken);
 
         var factory = new ShopProductFactory();
         var shopFactory = factory.GetShopFactory(shop);
-        
+
         var priceInformation = shopFactory.GetPriceInformation(document);
         var productName = shopFactory.GetProductName(document);
 
-        var initialPrice = !priceInformation.IsDiscounted ? Convert.ToDouble(priceInformation.CurrentPrice) : Convert.ToDouble(priceInformation.OldPrice);
+        var initialPrice = !priceInformation.IsDiscounted
+            ? Convert.ToDecimal(priceInformation.CurrentPrice)
+            : Convert.ToDecimal(priceInformation.OldPrice);
 
         // var product = await httpClientService.GetProductJson(url, cancellationToken);
         // var factory = new FetchDataFromJson();
@@ -52,11 +54,20 @@ public class UserProductService(
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<UserSavedProductResponse>> GetProducts(int userId,
+    public async Task<IEnumerable<UserSavedProductResponse>> GetProducts(int userId, bool hasChangedPrice,
         CancellationToken cancellationToken)
     {
-        var products = await dbContext.UserSavedProducts.Where(x => x.UserId == userId).AsNoTracking()
-            .ToListAsync(cancellationToken);
+        List<UserSavedProduct> products;
+        if (hasChangedPrice)
+        {
+            products = await dbContext.UserSavedProducts.Where(x => x.UserId == userId && x.NewPrice!=null).AsNoTracking()
+                .ToListAsync(cancellationToken);
+        }
+        else
+        {
+            products = await dbContext.UserSavedProducts.Where(x => x.UserId == userId).AsNoTracking()
+                .ToListAsync(cancellationToken);
+        }
 
         return products.Select(x => new UserSavedProductResponse
         {
@@ -65,6 +76,12 @@ public class UserProductService(
             NotificationType = x.NotificationType.ToString(),
             IsActive = x.IsActive,
             Shop = x.Shop.ToString(),
+            Url = x.Url,
+            InitialPrice = x.InitialPrice,
+            NewPrice = x.NewPrice,
+            DiscountPercentage = x.NewPrice != null
+                ? (int?)((x.InitialPrice - x.NewPrice.Value) / x.InitialPrice * 100m) + "%"
+                : null,
         }).ToList();
     }
 
