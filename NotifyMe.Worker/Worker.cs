@@ -38,7 +38,7 @@ public class Worker(
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             products = await dbContext.UserSavedProducts
-                .Where(x => x.IsActive && x.LastNotificationSentAt.Date != DateTime.Today.Date)
+                .Where(x => x.IsActive && (x.LastNotificationSentAt==null || x.LastNotificationSentAt.Value.Date != DateTime.Today.Date))
                 .ToListAsync(stoppingToken);
         }
 
