@@ -49,7 +49,8 @@ public class UserProductService(
             Shop = shop,
             NotificationType = notificationType,
             CreatedAt = DateTime.Now,
-            InitialPrice = initialPrice
+            InitialPrice = initialPrice,
+            NewPrice = priceInformation.IsDiscounted ? Convert.ToDecimal(priceInformation.CurrentPrice): null
         });
         await dbContext.SaveChangesAsync(cancellationToken);
     }

@@ -12,7 +12,7 @@ public class UserSavedProduct
     public bool IsActive { get; set; }
     public int UserId { get; set; }
     public Shop Shop { get; set; }
-    public DateTime LastNotificationSentAt { get; set; }
+    public DateTime? LastNotificationSentAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public int SentNotificationCount { get; set; }
     public decimal InitialPrice { get; set; }
