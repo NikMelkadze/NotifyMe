@@ -16,6 +16,9 @@ public class ShopProductFactory
         },
         {
             Shop.Dressup, new DressUpShopProductService()
+        },
+        {
+            Shop.Europroduct, new EuroproductShopProductService()
         }
     };
 

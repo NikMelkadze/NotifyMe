@@ -7,5 +7,6 @@ public enum Shop
    // Ee=2,
    // Zoommer=3,
     Itworks=4,
-    Dressup=5
+    Dressup=5,
+    Europroduct=6
 }

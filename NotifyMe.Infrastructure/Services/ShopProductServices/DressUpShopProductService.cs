@@ -1,6 +1,7 @@
 using AngleSharp.Dom;
 using NotifyMe.Domain.Exceptions;
 using NotifyMe.Infrastructure.Contracts;
+using NotifyMe.Infrastructure.Extensions;
 using NotifyMe.Infrastructure.Models;
 
 namespace NotifyMe.Infrastructure.Services.ShopProductServices;
@@ -14,18 +15,14 @@ public class DressUpShopProductService : IShopProductService<IDocument>
         var currentPrice = pricesRoot?
             .QuerySelector(".current-price .product-price[itemprop='price']")
             ?.GetAttribute("content")
-            ?.Trim() ?? "";
+            ?.NormalizePrice() ?? "";
 
-        var oldPriceRaw = pricesRoot?
+        var oldPrice = pricesRoot?
             .QuerySelector(".product-discount .regular-price")
-            ?.TextContent.Trim() ?? "";
-
-        var oldPrice = System.Text.RegularExpressions.Regex
-            .Replace(oldPriceRaw, @"[^\d,\.]", "")
-            .Replace(",", ".");
+            ?.TextContent.NormalizePrice();
 
         var isDiscounted = !string.IsNullOrWhiteSpace(oldPrice);
-            
+
         return new ProductPriceInformation
         {
             IsDiscounted = isDiscounted,

@@ -10,10 +10,8 @@ public class ItWorksShopProductService : IShopProductService<IDocument>
     public ProductPriceInformation GetPriceInformation(IDocument content)
     {
         var pricesDiv = content.QuerySelector("div.prices-container");
-        var currentPriceRaw = pricesDiv?.QuerySelector("#current-price")?.TextContent?.Trim() ?? "";
-        var oldPriceRaw = pricesDiv?.QuerySelector("#old-price")?.TextContent?.Trim() ?? "";
-        var currentPrice = System.Text.RegularExpressions.Regex.Replace(currentPriceRaw, @"[^\d]", "");
-        var oldPrice = System.Text.RegularExpressions.Regex.Replace(oldPriceRaw, @"[^\d]", "");
+        var currentPrice = pricesDiv?.QuerySelector("#current-price")?.TextContent?.Normalize() ?? "";
+        var oldPrice = pricesDiv?.QuerySelector("#old-price")?.TextContent?.Normalize() ?? "";
 
         var isDiscounted = oldPrice != "";
 
