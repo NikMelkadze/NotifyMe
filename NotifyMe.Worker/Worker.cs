@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using NotifyMe.Domain.Entities;
 using NotifyMe.Domain.Enums;
 using NotifyMe.Infrastructure.Contracts;
+using NotifyMe.Infrastructure.Extensions;
 using NotifyMe.Infrastructure.Models;
 using NotifyMe.Infrastructure.Services.ShopProductServices;
 using NotifyMe.Persistence;
@@ -70,7 +71,7 @@ public class Worker(
                 continue;
             }
 
-            var productCurrentPrice = Convert.ToDecimal(priceInformation.CurrentPrice);
+            var productCurrentPrice = Convert.ToDecimal(priceInformation.CurrentPrice.NormalizePrice());
             decimal? newPrice = null;
             
             if (productCurrentPrice != product.InitialPrice)
