@@ -22,9 +22,6 @@ public class ShopProductFactory
         },
         {
             Shop.Agrohub, new AgrohubProductServicec()
-        },
-        {
-            Shop.Agrohub, new AgrohubProductServicec()
         }
     };
 
