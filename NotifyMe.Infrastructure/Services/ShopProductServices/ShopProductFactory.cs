@@ -19,6 +19,12 @@ public class ShopProductFactory
         },
         {
             Shop.Europroduct, new EuroproductShopProductService()
+        },
+        {
+            Shop.Agrohub, new AgrohubProductServicec()
+        },
+        {
+            Shop.Agrohub, new AgrohubProductServicec()
         }
     };
 
