@@ -56,20 +56,25 @@ public class UserProductService(
     }
 
     public async Task<IEnumerable<UserSavedProductResponse>> GetProducts(int userId, bool hasChangedPrice,
+        bool isActive,
         CancellationToken cancellationToken)
     {
-        List<UserSavedProduct> products;
+        var query = dbContext.UserSavedProducts
+            .Where(x => x.UserId == userId)
+            .AsNoTracking();
+
         if (hasChangedPrice)
         {
-            products = await dbContext.UserSavedProducts.Where(x => x.UserId == userId && x.NewPrice != null)
-                .AsNoTracking()
-                .ToListAsync(cancellationToken);
+            query = query.Where(x => x.NewPrice != null);
         }
-        else
+
+        if (isActive)
         {
-            products = await dbContext.UserSavedProducts.Where(x => x.UserId == userId).AsNoTracking()
-                .ToListAsync(cancellationToken);
+            query = query.Where(x => x.IsActive);
         }
+
+        var products = await query
+            .ToListAsync(cancellationToken);
 
         return products.Select(x => new UserSavedProductResponse
         {
