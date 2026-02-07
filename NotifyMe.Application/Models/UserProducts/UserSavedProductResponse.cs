@@ -11,4 +11,5 @@ public class UserSavedProductResponse
     public decimal InitialPrice { get; set; }
     public decimal? NewPrice { get; set; }
     public string? DiscountPercentage { get; set; }
+    public decimal? PriceDifference { get; set; }
 }

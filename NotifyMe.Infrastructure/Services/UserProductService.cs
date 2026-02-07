@@ -50,7 +50,7 @@ public class UserProductService(
             NotificationType = notificationType,
             CreatedAt = DateTime.Now,
             InitialPrice = initialPrice,
-            NewPrice = priceInformation.IsDiscounted ? Convert.ToDecimal(priceInformation.CurrentPrice): null
+            NewPrice = priceInformation.IsDiscounted ? Convert.ToDecimal(priceInformation.CurrentPrice) : null
         });
         await dbContext.SaveChangesAsync(cancellationToken);
     }
@@ -61,7 +61,8 @@ public class UserProductService(
         List<UserSavedProduct> products;
         if (hasChangedPrice)
         {
-            products = await dbContext.UserSavedProducts.Where(x => x.UserId == userId && x.NewPrice!=null).AsNoTracking()
+            products = await dbContext.UserSavedProducts.Where(x => x.UserId == userId && x.NewPrice != null)
+                .AsNoTracking()
                 .ToListAsync(cancellationToken);
         }
         else
@@ -80,6 +81,7 @@ public class UserProductService(
             Url = x.Url,
             InitialPrice = x.InitialPrice,
             NewPrice = x.NewPrice,
+            PriceDifference = x.InitialPrice - x.NewPrice,
             DiscountPercentage = x.NewPrice != null
                 ? (int?)((x.InitialPrice - x.NewPrice.Value) / x.InitialPrice * 100m) + "%"
                 : null,
