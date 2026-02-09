@@ -39,7 +39,8 @@ public class Worker(
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             products = await dbContext.UserSavedProducts
-                .Where(x => x.IsActive && (x.LastNotificationSentAt==null || x.LastNotificationSentAt.Value.Date != DateTime.Today.Date))
+                .Where(x => x.IsActive && (x.LastNotificationSentAt == null ||
+                                           x.LastNotificationSentAt.Value.Date != DateTime.Today.Date))
                 .ToListAsync(stoppingToken);
         }
 
@@ -72,18 +73,9 @@ public class Worker(
             }
 
             var productCurrentPrice = Convert.ToDecimal(priceInformation.CurrentPrice.NormalizePrice());
-            decimal? newPrice = null;
-            
-            if (productCurrentPrice != product.InitialPrice)
-            {
-                if (productCurrentPrice != product.NewPrice)
-                {
-                    newPrice = productCurrentPrice;
-                }
-            }
+
             var hasNewPrice =
                 product.InitialPrice != productCurrentPrice;
-
 
             if (priceInformation.IsDiscounted || hasNewPrice)
             {
@@ -92,21 +84,28 @@ public class Worker(
                     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                     dbContext.Attach(product);
 
-                    if (priceInformation.IsDiscounted)
-                    {
-                        var email = (await dbContext.User
-                            .Where(x => x.Id == product.UserId)
-                            .Select(x => x.Email)
-                            .FirstOrDefaultAsync(stoppingToken))!;
+                    product.LastNotificationSentAt = DateTime.Now;
+                    product.SentNotificationCount++;
 
-                        SendEmail(email, product.Name, product.Shop, priceInformation.CurrentPrice,
-                            priceInformation.OldPrice!)
-                            ;
-                        product.LastNotificationSentAt = DateTime.Now;
-                        product.SentNotificationCount++;
+                    // When item had a new price and it got back to the initial price
+                    if (product.NewPrice != null && product.InitialPrice == productCurrentPrice)
+                    {
+                        product.NewPrice = null;
                     }
-                    
-                    product.NewPrice = newPrice;
+                    else
+                    {
+                        product.NewPrice = productCurrentPrice;
+                    }
+
+                    var email = (await dbContext.User
+                        .Where(x => x.Id == product.UserId)
+                        .Select(x => x.Email)
+                        .FirstOrDefaultAsync(stoppingToken))!;
+
+                    SendEmail(email, product.Name, product.Shop, priceInformation.CurrentPrice,
+                        priceInformation.OldPrice!);
+
+
                     await dbContext.SaveChangesAsync(stoppingToken);
                 }
             }
