@@ -86,7 +86,7 @@ public class UserProductService(
             Url = x.Url,
             InitialPrice = x.InitialPrice,
             NewPrice = x.NewPrice,
-            PriceDifference = x.NewPrice- x.InitialPrice,
+            PriceDifference = x.NewPrice!=null ? Math.Abs(x.InitialPrice - x.NewPrice.Value):null,
             DiscountPercentage = x.NewPrice != null
                 ? (int?)((x.NewPrice.Value - x.InitialPrice) / x.InitialPrice * 100m) + "%"
                 : null,
