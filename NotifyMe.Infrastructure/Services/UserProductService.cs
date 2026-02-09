@@ -86,9 +86,9 @@ public class UserProductService(
             Url = x.Url,
             InitialPrice = x.InitialPrice,
             NewPrice = x.NewPrice,
-            PriceDifference = x.InitialPrice - x.NewPrice,
+            PriceDifference = x.NewPrice- x.InitialPrice,
             DiscountPercentage = x.NewPrice != null
-                ? (int?)((x.InitialPrice - x.NewPrice.Value) / x.InitialPrice * 100m) + "%"
+                ? (int?)((x.NewPrice.Value - x.InitialPrice) / x.InitialPrice * 100m) + "%"
                 : null,
         }).ToList();
     }
