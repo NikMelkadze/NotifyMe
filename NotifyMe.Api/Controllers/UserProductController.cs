@@ -22,10 +22,12 @@ public class UserProductController(IUserProductService userProductService) : Con
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<UserSavedProductResponse>>> GetProducts([FromQuery] bool hasChangedPrice ,CancellationToken cancellationToken)
+    public async Task<ActionResult<IEnumerable<UserSavedProductResponse>>> GetProducts([FromQuery] bool hasChangedPrice,
+        [FromQuery] bool isActive, CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        return Ok(await userProductService.GetProducts(int.Parse(userId!),hasChangedPrice, cancellationToken));
+        return Ok(
+            await userProductService.GetProducts(int.Parse(userId!), hasChangedPrice, isActive, cancellationToken));
     }
 
     [HttpDelete("{id:int}")]

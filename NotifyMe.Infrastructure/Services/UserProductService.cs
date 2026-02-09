@@ -56,20 +56,25 @@ public class UserProductService(
     }
 
     public async Task<IEnumerable<UserSavedProductResponse>> GetProducts(int userId, bool hasChangedPrice,
+        bool isActive,
         CancellationToken cancellationToken)
     {
-        List<UserSavedProduct> products;
+        var query = dbContext.UserSavedProducts
+            .Where(x => x.UserId == userId)
+            .AsNoTracking();
+
         if (hasChangedPrice)
         {
-            products = await dbContext.UserSavedProducts.Where(x => x.UserId == userId && x.NewPrice != null)
-                .AsNoTracking()
-                .ToListAsync(cancellationToken);
+            query = query.Where(x => x.NewPrice != null);
         }
-        else
+
+        if (isActive)
         {
-            products = await dbContext.UserSavedProducts.Where(x => x.UserId == userId).AsNoTracking()
-                .ToListAsync(cancellationToken);
+            query = query.Where(x => x.IsActive);
         }
+
+        var products = await query
+            .ToListAsync(cancellationToken);
 
         return products.Select(x => new UserSavedProductResponse
         {
@@ -81,9 +86,9 @@ public class UserProductService(
             Url = x.Url,
             InitialPrice = x.InitialPrice,
             NewPrice = x.NewPrice,
-            PriceDifference = x.InitialPrice - x.NewPrice,
+            PriceDifference = x.NewPrice!=null ? Math.Abs(x.InitialPrice - x.NewPrice.Value):null,
             DiscountPercentage = x.NewPrice != null
-                ? (int?)((x.InitialPrice - x.NewPrice.Value) / x.InitialPrice * 100m) + "%"
+                ? (int?)((x.NewPrice.Value - x.InitialPrice) / x.InitialPrice * 100m) + "%"
                 : null,
         }).ToList();
     }
