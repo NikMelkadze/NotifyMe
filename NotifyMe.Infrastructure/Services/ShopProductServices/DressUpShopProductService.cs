@@ -8,26 +8,37 @@ namespace NotifyMe.Infrastructure.Services.ShopProductServices;
 
 public class DressUpShopProductService : IShopProductService<IDocument>
 {
+    public string Price { get; set; }
+    public string? DiscountedPrice { get; set; }
+
     public ProductPriceInformation GetPriceInformation(IDocument content)
     {
         var pricesRoot = content.QuerySelector(".product-prices");
 
-        var currentPrice = pricesRoot?
-            .QuerySelector(".current-price .product-price[itemprop='price']")
-            ?.GetAttribute("content")
-            ?.NormalizePrice() ?? "";
-
-        var oldPrice = pricesRoot?
+        var regularPriceWhenDiscrount = pricesRoot?
             .QuerySelector(".product-discount .regular-price")
-            ?.TextContent.NormalizePrice();
+            ?.TextContent;
 
-        var isDiscounted = !string.IsNullOrWhiteSpace(oldPrice);
+        var discountedPriceWhenDiscount = pricesRoot?
+            .QuerySelector(".current-price .product-price[itemprop='price']")
+            ?.GetAttribute("content");
+
+        if (regularPriceWhenDiscrount != null)
+        {
+            DiscountedPrice = discountedPriceWhenDiscount!;
+            Price = regularPriceWhenDiscrount;
+        }
+        else
+        {
+            Price = discountedPriceWhenDiscount!;
+        }
+
 
         return new ProductPriceInformation
         {
-            IsDiscounted = isDiscounted,
-            CurrentPrice = currentPrice,
-            OldPrice = oldPrice
+            IsDiscounted = DiscountedPrice != null,
+            DiscountedPrice = DiscountedPrice?.NormalizePrice(),
+            Price = Price.NormalizePrice()
         };
     }
 

@@ -7,36 +7,37 @@ namespace NotifyMe.Infrastructure.Services.ShopProductServices;
 
 public class AgrohubProductServicec : IShopProductService<IDocument>
 {
+    public string Price { get; set; } = null!;
+    public string? DiscountedPrice { get; set; }
+
     public ProductPriceInformation GetPriceInformation(IDocument content)
     {
-        string? currentPrice = null;
-        string? oldPrice = null;
-
         var priceBlock = content.QuerySelector("p.sc-24adf2a9-19");
-        var oldPriceEl = priceBlock!.QuerySelector("span");
 
-        if (oldPriceEl != null)
+        var regularPriceWhenDiscrount = priceBlock!.QuerySelector("span");
+
+        if (regularPriceWhenDiscrount != null)
         {
-            oldPrice = oldPriceEl.TextContent.NormalizePrice();
+            Price = regularPriceWhenDiscrount.TextContent;
 
-            var newPriceRaw = priceBlock
+            var discountedPriceRaw = priceBlock
                 .ChildNodes
                 .Where(n => n.NodeType == AngleSharp.Dom.NodeType.Text)
                 .Select(n => n.TextContent)
                 .FirstOrDefault(t => !string.IsNullOrWhiteSpace(t));
 
-            currentPrice = newPriceRaw.NormalizePrice();
+            DiscountedPrice = discountedPriceRaw;
         }
         else
         {
-            currentPrice = priceBlock.TextContent.NormalizePrice();
+            Price = priceBlock.TextContent;
         }
 
         return new ProductPriceInformation()
         {
-            CurrentPrice = currentPrice,
-            OldPrice = oldPrice,
-            IsDiscounted = oldPrice != null
+            DiscountedPrice = DiscountedPrice?.Normalize(),
+            Price = Price.NormalizePrice(),
+            IsDiscounted = DiscountedPrice != null
         };
     }
 

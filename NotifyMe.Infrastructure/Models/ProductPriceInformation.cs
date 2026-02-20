@@ -2,7 +2,7 @@ namespace NotifyMe.Infrastructure.Models;
 
 public class ProductPriceInformation
 {
-     public bool IsDiscounted { get; set; }
-     public string CurrentPrice { get; set; } = null!;
-     public string? OldPrice { get; set; }
+    public bool IsDiscounted { get; set; }
+    public string? DiscountedPrice { get; set; }
+    public string Price { get; set; } = null!;
 }

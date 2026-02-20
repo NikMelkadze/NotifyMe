@@ -50,34 +50,33 @@ public class Worker(
             try
             {
                 var html = await httpClientService.GetHtml(product.Url, stoppingToken);
-
                 var document = await browsingContext.OpenAsync(req => req.Content(html), stoppingToken);
-
 
                 var factory = new ShopProductFactory();
                 var shopFactory = factory.GetShopFactory(product.Shop);
 
                 priceInformation = shopFactory.GetPriceInformation(document);
-
-                // else
-                // {
-                //     var response = await httpClientService.GetProductJson(product.Url, stoppingToken);
-                //     var factory = new FetchDataFromJson();
-                //     discountInfo = await factory.GetDiscountInformation(response, product.Shop, stoppingToken);
-                // }
             }
             catch (Exception e)
             {
-                logger.LogInformation(e.ToString(), "Error");
+                logger.LogInformation(e.ToString(), "Error while parsing url");
                 continue;
             }
 
-            var productCurrentPrice = Convert.ToDecimal(priceInformation.CurrentPrice.NormalizePrice());
+            var productNewRegularPrice = Convert.ToDecimal(priceInformation.Price.NormalizePrice());
 
-            var hasNewPrice =
-                product.InitialPrice != productCurrentPrice;
+            var hasNewRegularPrice = product.InitialPrice != productNewRegularPrice ||
+                                     product.RegularPrice != productNewRegularPrice;
 
-            if (priceInformation.IsDiscounted || hasNewPrice)
+            if (hasNewRegularPrice)
+            {
+                await SaveNewRegularPrice(productNewRegularPrice, product, stoppingToken);
+            }
+
+            var discountedPrice = Convert.ToDecimal(priceInformation.DiscountedPrice?.NormalizePrice());
+
+
+            if (priceInformation.IsDiscounted)
             {
                 using (var scope = serviceProvider.CreateScope())
                 {
@@ -87,14 +86,9 @@ public class Worker(
                     product.LastNotificationSentAt = DateTime.Now;
                     product.SentNotificationCount++;
 
-                    // When item had a new price and it got back to the initial price
-                    if (product.NewPrice != null && product.InitialPrice == productCurrentPrice)
+                    if (product.DiscountedPrice == null || product.DiscountedPrice != discountedPrice)
                     {
-                        product.NewPrice = null;
-                    }
-                    else
-                    {
-                        product.NewPrice = productCurrentPrice;
+                        product.DiscountedPrice = discountedPrice;
                     }
 
                     var email = (await dbContext.User
@@ -102,15 +96,20 @@ public class Worker(
                         .Select(x => x.Email)
                         .FirstOrDefaultAsync(stoppingToken))!;
 
-                    SendEmail(email, product.Name, product.Shop, priceInformation.CurrentPrice,
-                        priceInformation.OldPrice!);
-
+                    SendEmail(email, product.Name, product.Shop, priceInformation.DiscountedPrice!,
+                        priceInformation.Price);
 
                     await dbContext.SaveChangesAsync(stoppingToken);
                 }
             }
             else
             {
+                if (product.DiscountedPrice != null)
+                {
+                    await RemoveDiscountPrice(product, stoppingToken);
+                    Console.WriteLine($"{product.Shop} - {product.Name} no longer has discount");
+                }
+
                 Console.WriteLine($"{product.Shop} - {product.Name} Item is not Discounted");
             }
         }
@@ -142,5 +141,29 @@ public class Worker(
 
         smtpClient.Send(mail);
         Console.WriteLine($"Email sent to {userEmail}");
+    }
+
+    private async Task SaveNewRegularPrice(decimal newRegularPrice, UserSavedProduct product,
+        CancellationToken cancellationToken)
+    {
+        using var scope = serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        dbContext.Attach(product);
+
+        product.RegularPrice = newRegularPrice;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task RemoveDiscountPrice(UserSavedProduct product,
+        CancellationToken cancellationToken)
+    {
+        using var scope = serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        dbContext.Attach(product);
+
+        product.DiscountedPrice = null;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 }
