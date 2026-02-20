@@ -32,9 +32,7 @@ public class UserProductService(
         var priceInformation = shopFactory.GetPriceInformation(document);
         var productName = shopFactory.GetProductName(document);
 
-        var initialPrice = !priceInformation.IsDiscounted
-            ? Convert.ToDecimal(priceInformation.CurrentPrice)
-            : Convert.ToDecimal(priceInformation.OldPrice);
+        var initialPrice = Convert.ToDecimal(priceInformation.Price);
 
         // var product = await httpClientService.GetProductJson(url, cancellationToken);
         // var factory = new FetchDataFromJson();
@@ -50,7 +48,7 @@ public class UserProductService(
             NotificationType = notificationType,
             CreatedAt = DateTime.Now,
             InitialPrice = initialPrice,
-            NewPrice = priceInformation.IsDiscounted ? Convert.ToDecimal(priceInformation.CurrentPrice) : null
+            NewPrice = Convert.ToDecimal(priceInformation.DiscountedPrice)
         });
         await dbContext.SaveChangesAsync(cancellationToken);
     }
@@ -86,7 +84,7 @@ public class UserProductService(
             Url = x.Url,
             InitialPrice = x.InitialPrice,
             NewPrice = x.NewPrice,
-            PriceDifference = x.NewPrice!=null ? Math.Abs(x.InitialPrice - x.NewPrice.Value):null,
+            PriceDifference = x.NewPrice != null ? Math.Abs(x.InitialPrice - x.NewPrice.Value) : null,
             DiscountPercentage = x.NewPrice != null
                 ? (int?)((x.NewPrice.Value - x.InitialPrice) / x.InitialPrice * 100m) + "%"
                 : null,

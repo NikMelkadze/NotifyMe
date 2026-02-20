@@ -1,25 +1,37 @@
 using AngleSharp.Dom;
 using NotifyMe.Domain.Exceptions;
 using NotifyMe.Infrastructure.Contracts;
+using NotifyMe.Infrastructure.Extensions;
 using NotifyMe.Infrastructure.Models;
 
 namespace NotifyMe.Infrastructure.Services.ShopProductServices;
 
 public class ItWorksShopProductService : IShopProductService<IDocument>
 {
+    public string Price { get; set; } = null!;
+    public string? DiscountedPrice { get; set; }
+
     public ProductPriceInformation GetPriceInformation(IDocument content)
     {
         var pricesDiv = content.QuerySelector("div.prices-container");
-        var currentPrice = pricesDiv?.QuerySelector("#current-price")?.TextContent?.Normalize() ?? "";
-        var oldPrice = pricesDiv?.QuerySelector("#old-price")?.TextContent?.Normalize() ?? "";
 
-        var isDiscounted = oldPrice != "";
+        var regularPriceWhenDiscrount = pricesDiv?.QuerySelector("#old-price")?.TextContent;
+
+        if (regularPriceWhenDiscrount != null)
+        {
+            Price = regularPriceWhenDiscrount;
+            DiscountedPrice = pricesDiv?.QuerySelector("#current-price")?.TextContent;
+        }
+        else
+        {
+            Price = pricesDiv?.QuerySelector("#current-price")?.TextContent!;
+        }
 
         return new ProductPriceInformation
         {
-            IsDiscounted = isDiscounted,
-            CurrentPrice = currentPrice,
-            OldPrice = oldPrice
+            IsDiscounted = DiscountedPrice != null,
+            DiscountedPrice = DiscountedPrice?.NormalizePrice(),
+            Price = Price.NormalizePrice()
         };
     }
 

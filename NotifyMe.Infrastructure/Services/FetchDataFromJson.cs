@@ -14,8 +14,8 @@ public class FetchDataFromJson : FetchDataFactory<ProductBase>
         return Task.FromResult(new ProductPriceInformation()
         {
             IsDiscounted = product.Product.PreviousPrice != null,
-            CurrentPrice = product.Product.Price.ToString(CultureInfo.InvariantCulture),
-            OldPrice = product.Product.PreviousPrice.ToString()
+            DiscountedPrice = product.Product.Price.ToString(CultureInfo.InvariantCulture),
+            Price = product.Product.PreviousPrice.ToString()
         });
     }
 

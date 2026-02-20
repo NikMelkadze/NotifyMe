@@ -8,39 +8,34 @@ namespace NotifyMe.Infrastructure.Services.ShopProductServices;
 
 public class EuroproductShopProductService : IShopProductService<IDocument>
 {
+    public string Price { get; set; } = null!;
+    public string? DiscountedPrice { get; set; }
+
     public ProductPriceInformation GetPriceInformation(IDocument content)
     {
         var productItem = content.QuerySelector("div.product-item")!;
 
-        var newPriceEl = productItem.QuerySelector("span.product-price span.new");
-        var oldPriceEl = productItem.QuerySelector("span.product-price span.old");
+        var discountedPriceElWhenDiscount = productItem.QuerySelector("span.product-price span.new");
+        var regularPriceElWhenDiscount = productItem.QuerySelector("span.product-price span.old");
 
-        if (newPriceEl != null && oldPriceEl != null)
+        if (discountedPriceElWhenDiscount != null && regularPriceElWhenDiscount != null)
         {
-            var currentPrice = newPriceEl.TextContent.NormalizePrice();
-            var oldPrice = oldPriceEl.TextContent.NormalizePrice();
-
-            return new ProductPriceInformation()
-            {
-                CurrentPrice = currentPrice,
-                OldPrice = oldPrice,
-                IsDiscounted = true
-            };
+            DiscountedPrice = discountedPriceElWhenDiscount.TextContent;
+            Price = regularPriceElWhenDiscount.TextContent;
         }
         else
         {
-            var currentPrice = content
+            Price = content
                 .QuerySelector("span.product-price > span")
-                ?.TextContent
-                .NormalizePrice()!;
-
-            return new ProductPriceInformation()
-            {
-                CurrentPrice = currentPrice,
-                OldPrice = null,
-                IsDiscounted = false
-            };
+                ?.TextContent!;
         }
+
+        return new ProductPriceInformation()
+        {
+            DiscountedPrice = DiscountedPrice?.NormalizePrice(),
+            Price = Price.NormalizePrice(),
+            IsDiscounted = DiscountedPrice != null
+        };
     }
 
     public string GetProductName(IDocument content)

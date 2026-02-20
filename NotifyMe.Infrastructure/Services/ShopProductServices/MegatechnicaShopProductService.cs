@@ -8,6 +8,9 @@ namespace NotifyMe.Infrastructure.Services.ShopProductServices;
 
 public class MegatechnicaShopProductService : IShopProductService<IDocument>
 {
+    public string Price { get; set; }
+    public string? DiscountedPrice { get; set; }
+
     public ProductPriceInformation GetPriceInformation(IDocument content)
     {
         var pricesDivMega = content.QuerySelector("div.prices");
@@ -18,8 +21,8 @@ public class MegatechnicaShopProductService : IShopProductService<IDocument>
         return new ProductPriceInformation
         {
             IsDiscounted = isDiscounted,
-            CurrentPrice = currentPrice,
-            OldPrice = oldPrice
+            DiscountedPrice = currentPrice,
+            Price = oldPrice
         };
     }
 
