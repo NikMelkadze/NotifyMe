@@ -39,6 +39,24 @@
       <None Remove="logs\stdout_20251214143827_13416.log" />
       <None Remove="logs\stdout_20251214143711_19148.log" />
       <None Remove="logs\stdout_20251214143558_19768.log" />
+      <None Remove="logs\stdout_20260220143739_19692.log" />
+      <None Remove="logs\stdout_20260220143130_15484.log" />
+      <None Remove="logs\stdout_20260220141957_10084.log" />
+      <None Remove="logs\stdout_20260220141718_26884.log" />
+      <None Remove="logs\stdout_20260220141632_27000.log" />
+      <None Remove="logs\stdout_20260220141614_11284.log" />
+      <None Remove="logs\stdout_20260220140530_14232.log" />
+      <None Remove="logs\stdout_20260220140433_2140.log" />
+      <None Remove="logs\stdout_20260220140154_18888.log" />
+      <None Remove="logs\stdout_20260220140054_20472.log" />
+      <None Remove="logs\stdout_20260220135841_11456.log" />
+      <None Remove="logs\stdout_20260220135808_24196.log" />
+      <None Remove="logs\stdout_20260220135113_7488.log" />
+      <None Remove="logs\stdout_20260220135016_24900.log" />
+      <None Remove="logs\stdout_20260220134625_16020.log" />
+      <None Remove="logs\stdout_20260220134518_6780.log" />
+      <None Remove="logs\stdout_20260220133555_20704.log" />
+      <None Remove="logs\stdout_20260220133328_25372.log" />
     </ItemGroup>
 
     <ItemGroup>
