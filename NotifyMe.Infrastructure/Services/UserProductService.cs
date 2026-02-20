@@ -89,7 +89,7 @@ public class UserProductService(
             DiscountPercentage = x.DiscountedPrice != null
                 ? (int?)((x.DiscountedPrice.Value - x.InitialPrice) / x.InitialPrice * 100m) + "%"
                 : null,
-        }).ToList();
+        }).OrderByDescending(x=>x.IsActive).ThenByDescending(x=>x.Id).ToList();
     }
 
     public async Task DeleteProduct(int productId, int userId, CancellationToken cancellationToken)
