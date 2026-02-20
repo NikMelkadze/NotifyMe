@@ -15,12 +15,14 @@ namespace NotifyMe.Infrastructure.Services;
 public class UserProductService(
     ApplicationDbContext dbContext,
     IHttpClientService httpClientService,
-    IBrowsingContext browsingContext)
+    IBrowsingContext browsingContext,
+    Microsoft.Extensions.Configuration.IConfiguration configuration)
     : IUserProductService
 {
     public async Task SaveProduct(string url, int userId, NotificationType notificationType,
         CancellationToken cancellationToken)
     {
+        await ValidateMaxProducts(userId, cancellationToken);
         var shop = Validators.UrlValidator(url);
 
         var html = await httpClientService.GetHtml(url, cancellationToken);
@@ -89,7 +91,7 @@ public class UserProductService(
             DiscountPercentage = x.DiscountedPrice != null
                 ? (int?)((x.DiscountedPrice.Value - x.InitialPrice) / x.InitialPrice * 100m) + "%"
                 : null,
-        }).ToList();
+        }).OrderByDescending(x => x.IsActive).ThenByDescending(x => x.Id).ToList();
     }
 
     public async Task DeleteProduct(int productId, int userId, CancellationToken cancellationToken)
@@ -112,6 +114,11 @@ public class UserProductService(
 
         if (isActive != null)
         {
+            if (isActive.Value)
+            {
+                await ValidateMaxProducts(userId, cancellationToken);
+            }
+
             product.IsActive = isActive.Value;
         }
 
@@ -121,5 +128,18 @@ public class UserProductService(
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task ValidateMaxProducts(int userId, CancellationToken cancellationToken)
+    {
+        var maxProductCount= configuration.GetSection("MaxProduct");
+        
+        var activeProductsCount =
+            await dbContext.UserSavedProducts.CountAsync(x => x.UserId == userId && x.IsActive, cancellationToken);
+
+        if (activeProductsCount >= int.Parse(maxProductCount.Value!))
+        {
+            throw new ValidationException("Can't add more than active 10 product");
+        }
     }
 }
