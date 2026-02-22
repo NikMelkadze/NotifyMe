@@ -39,8 +39,9 @@ public class Worker(
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             products = await dbContext.UserSavedProducts
-                .Where(x => x.IsActive && (x.LastNotificationSentAt == null ||
-                                           x.LastNotificationSentAt.Value.Date != DateTime.Today.Date))
+                .Where(x => x.Status == ProductStatus.Active && (x.LastNotificationSentAt == null ||
+                                                                 x.LastNotificationSentAt.Value.Date !=
+                                                                 DateTime.Today.Date))
                 .ToListAsync(stoppingToken);
         }
 
@@ -60,6 +61,7 @@ public class Worker(
             catch (Exception e)
             {
                 logger.LogInformation(e.ToString(), "Error while parsing url");
+                await RemovePrices(product, stoppingToken);
                 continue;
             }
 
@@ -163,6 +165,20 @@ public class Worker(
         dbContext.Attach(product);
 
         product.DiscountedPrice = null;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task RemovePrices(UserSavedProduct product,
+        CancellationToken cancellationToken)
+    {
+        using var scope = serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        dbContext.Attach(product);
+
+        product.DiscountedPrice = null;
+        product.RegularPrice = null;
+        product.Status = ProductStatus.IsUnavailable;
 
         await dbContext.SaveChangesAsync(cancellationToken);
     }
