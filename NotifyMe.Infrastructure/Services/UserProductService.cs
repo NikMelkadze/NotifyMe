@@ -83,10 +83,12 @@ public class UserProductService(
             Name = x.Name,
             NotificationType = x.NotificationType.ToString(),
             IsActive = x.IsActive,
+            Status = x.Status,
             Shop = x.Shop.ToString(),
             Url = x.Url,
             InitialPrice = x.InitialPrice,
-            NewPrice = x.DiscountedPrice,
+            DiscountedPrice = x.DiscountedPrice,
+            NewPrice = x.RegularPrice,
             PriceDifference = x.DiscountedPrice != null ? Math.Abs(x.InitialPrice - x.DiscountedPrice.Value) : null,
             DiscountPercentage = x.DiscountedPrice != null
                 ? (int?)((x.DiscountedPrice.Value - x.InitialPrice) / x.InitialPrice * 100m) + "%"
@@ -118,6 +120,10 @@ public class UserProductService(
             {
                 await ValidateMaxProducts(userId, cancellationToken);
             }
+            else
+            {
+                ResetProductChangedPrices(product);
+            }
 
             product.IsActive = isActive.Value;
         }
@@ -132,8 +138,8 @@ public class UserProductService(
 
     private async Task ValidateMaxProducts(int userId, CancellationToken cancellationToken)
     {
-        var maxProductCount= configuration.GetSection("MaxProduct");
-        
+        var maxProductCount = configuration.GetSection("MaxProduct");
+
         var activeProductsCount =
             await dbContext.UserSavedProducts.CountAsync(x => x.UserId == userId && x.IsActive, cancellationToken);
 
@@ -141,5 +147,11 @@ public class UserProductService(
         {
             throw new ValidationException("Can't add more than active 10 product");
         }
+    }
+
+    private void ResetProductChangedPrices(UserSavedProduct product)
+    {
+        product.RegularPrice = null;
+        product.DiscountedPrice = null;
     }
 }
