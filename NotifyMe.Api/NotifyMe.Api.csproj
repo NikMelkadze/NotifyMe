@@ -29,4 +29,11 @@
       <Folder Include="logs\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="logs\stdout_20260224155431_11696.log" />
+      <None Remove="logs\stdout_20260224153959_5764.log" />
+      <None Remove="logs\stdout_20260224153742_19572.log" />
+      <None Remove="logs\stdout_20260224153542_10188.log" />
+    </ItemGroup>
+
 </Project>

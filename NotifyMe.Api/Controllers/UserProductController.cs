@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using NotifyMe.Application.Contracts;
 using NotifyMe.Application.Models;
 using NotifyMe.Application.Models.UserProducts;
+using NotifyMe.Domain.Enums;
 
 namespace NotifyMe.Api.Controllers;
 
@@ -22,12 +23,12 @@ public class UserProductController(IUserProductService userProductService) : Con
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<UserSavedProductResponse>>> GetProducts([FromQuery] bool hasChangedPrice,
-        [FromQuery] bool isActive, CancellationToken cancellationToken)
+    public async Task<ActionResult<UserSavedProductsResponse>> GetProducts([FromQuery] bool hasChangedPrice,
+        [FromQuery] ProductStatus? status, CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         return Ok(
-            await userProductService.GetProducts(int.Parse(userId!), hasChangedPrice, isActive, cancellationToken));
+            await userProductService.GetProducts(int.Parse(userId!), hasChangedPrice, status, cancellationToken));
     }
 
     [HttpDelete("{id:int}")]
@@ -44,7 +45,7 @@ public class UserProductController(IUserProductService userProductService) : Con
         CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        await userProductService.EditProduct(id, int.Parse(userId!), request.IsActive, request.NotificationType,
+        await userProductService.EditProduct(id, int.Parse(userId!), request.Status, request.NotificationType,
             cancellationToken);
         return Ok();
     }

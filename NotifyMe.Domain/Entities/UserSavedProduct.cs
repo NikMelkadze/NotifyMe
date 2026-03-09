@@ -10,7 +10,6 @@ public class UserSavedProduct
     public string Url { get; set; } = null!;
     public string Name { get; set; } = null!;
     public NotificationType NotificationType { get; set; }
-    public bool IsActive { get; set; }
     public ProductStatus Status { get; set; }
     public int UserId { get; set; }
     public Shop Shop { get; set; }

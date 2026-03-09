@@ -43,7 +43,7 @@ public class UserProductService(
         dbContext.UserSavedProducts.Add(new UserSavedProduct
         {
             Url = url,
-            IsActive = true,
+            Status = ProductStatus.Active,
             Name = productName,
             UserId = userId,
             Shop = shop,
@@ -56,44 +56,50 @@ public class UserProductService(
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<UserSavedProductResponse>> GetProducts(int userId, bool hasChangedPrice,
-        bool isActive,
+    public async Task<UserSavedProductsResponse> GetProducts(int userId, bool hasChangedPrice,
+        ProductStatus? status,
         CancellationToken cancellationToken)
     {
         var query = dbContext.UserSavedProducts
             .Where(x => x.UserId == userId)
             .AsNoTracking();
 
+        var activeProductsCount = await dbContext.UserSavedProducts.CountAsync(x =>
+            x.UserId == userId && x.Status == ProductStatus.Active, cancellationToken);
+
         if (hasChangedPrice)
         {
             query = query.Where(x => x.DiscountedPrice != null);
         }
 
-        if (isActive)
+        if (status != null)
         {
-            query = query.Where(x => x.IsActive);
+            query = query.Where(x => x.Status == status);
         }
 
         var products = await query
             .ToListAsync(cancellationToken);
 
-        return products.Select(x => new UserSavedProductResponse
+        return new UserSavedProductsResponse()
         {
-            Id = x.Id,
-            Name = x.Name,
-            NotificationType = x.NotificationType.ToString(),
-            IsActive = x.IsActive,
-            Status = x.Status,
-            Shop = x.Shop.ToString(),
-            Url = x.Url,
-            InitialPrice = x.InitialPrice,
-            DiscountedPrice = x.DiscountedPrice,
-            NewPrice = x.RegularPrice,
-            PriceDifference = x.DiscountedPrice != null ? Math.Abs(x.InitialPrice - x.DiscountedPrice.Value) : null,
-            DiscountPercentage = x.DiscountedPrice != null
-                ? (int?)((x.DiscountedPrice.Value - x.InitialPrice) / x.InitialPrice * 100m) + "%"
-                : null,
-        }).OrderByDescending(x => x.IsActive).ThenByDescending(x => x.Id).ToList();
+            ActiveProductsCount = activeProductsCount,
+            Products = products.Select(x => new Product
+            {
+                Id = x.Id,
+                Name = x.Name,
+                NotificationType = x.NotificationType.ToString(),
+                Status = x.Status,
+                Shop = x.Shop.ToString(),
+                Url = x.Url,
+                InitialPrice = x.InitialPrice,
+                DiscountedPrice = x.DiscountedPrice,
+                NewPrice = x.RegularPrice,
+                PriceDifference = x.DiscountedPrice != null ? Math.Abs(x.InitialPrice - x.DiscountedPrice.Value) : null,
+                DiscountPercentage = x.DiscountedPrice != null
+                    ? (int?)((x.DiscountedPrice.Value - x.InitialPrice) / x.InitialPrice * 100m) + "%"
+                    : null,
+            }).ToList()
+        };
     }
 
     public async Task DeleteProduct(int productId, int userId, CancellationToken cancellationToken)
@@ -102,7 +108,7 @@ public class UserProductService(
             .ExecuteDeleteAsync(cancellationToken);
     }
 
-    public async Task EditProduct(int productId, int userId, bool? isActive, NotificationType? notificationType,
+    public async Task EditProduct(int productId, int userId, ProductStatus? status, NotificationType? notificationType,
         CancellationToken cancellationToken)
     {
         var product = await dbContext.UserSavedProducts.FirstOrDefaultAsync(
@@ -114,18 +120,23 @@ public class UserProductService(
             throw new NotFoundException("Product Not found");
         }
 
-        if (isActive != null)
+        if (status != null)
         {
-            if (isActive.Value)
+            if (status.Value == ProductStatus.Active)
             {
                 await ValidateMaxProducts(userId, cancellationToken);
+                product.Status = ProductStatus.Active;
+            }
+
+            else if (status.Value == ProductStatus.Inacetive)
+            {
+                ResetProductChangedPrices(product);
+                product.Status = ProductStatus.Inacetive;
             }
             else
             {
-                ResetProductChangedPrices(product);
+                throw new ValidationException("Wrong Status");
             }
-
-            product.IsActive = isActive.Value;
         }
 
         if (notificationType != null)
@@ -141,7 +152,8 @@ public class UserProductService(
         var maxProductCount = configuration.GetSection("MaxProduct");
 
         var activeProductsCount =
-            await dbContext.UserSavedProducts.CountAsync(x => x.UserId == userId && x.IsActive, cancellationToken);
+            await dbContext.UserSavedProducts.CountAsync(x => x.UserId == userId && x.Status == ProductStatus.Active,
+                cancellationToken);
 
         if (activeProductsCount >= int.Parse(maxProductCount.Value!))
         {
