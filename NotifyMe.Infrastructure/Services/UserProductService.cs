@@ -98,7 +98,7 @@ public class UserProductService(
                 DiscountPercentage = x.DiscountedPrice != null
                     ? (int?)((x.DiscountedPrice.Value - x.InitialPrice) / x.InitialPrice * 100m) + "%"
                     : null,
-            }).OrderByDescending(x => x.Status == ProductStatus.Active).ThenByDescending(x => x.Id).ToList()
+            }).ToList()
         };
     }
 
