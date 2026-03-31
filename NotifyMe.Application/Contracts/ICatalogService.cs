@@ -2,5 +2,5 @@ namespace NotifyMe.Application.Contracts;
 
 public interface ICatalogService
 {
-   string[]GetShops();
+    Task<string[]> GetShops(CancellationToken cancellationToken);
 }

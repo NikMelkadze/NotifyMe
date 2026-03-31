@@ -10,7 +10,7 @@ public class ReportService(ApplicationDbContext dbContext) : IReportService
 {
     public async Task<IEnumerable<SavedProduct>> GetTopSavedProducts(int top, CancellationToken cancellationToken)
     {
-        return await dbContext.UserSavedProducts
+        return await dbContext.SavedProducts
             .Where(r => r.Status == ProductStatus.Active)
             .GroupBy(r => new { r.Name, r.Shop })
             .Select(g => new SavedProduct
@@ -23,19 +23,21 @@ public class ReportService(ApplicationDbContext dbContext) : IReportService
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<SavedProduct>> GetCompanyTopSavedProducts(int top, Shop shop,
+    public async Task<IEnumerable<SavedProduct>> GetCompanyTopSavedProducts(int top, string shop,
         CancellationToken cancellationToken)
     {
-        return await dbContext.UserSavedProducts
-            .Where(r => r.Shop == shop && r.Status == ProductStatus.Active)
-            .GroupBy(r => new { r.Name, r.Shop })
-            .Select(g => new SavedProduct
-            {
-                Name = g.Key.Name,
-                Shop = g.Key.Shop.ToString(),
-                Count = g.Count()
-            }).Take(top)
-            .OrderByDescending(x => x.Count)
-            .ToListAsync(cancellationToken);
+        // return await dbContext.UserSavedProducts
+        //     .Where(r => r.Shop == shop && r.Status == ProductStatus.Active)
+        //     .GroupBy(r => new { r.Name, r.Shop })
+        //     .Select(g => new SavedProduct
+        //     {
+        //         Name = g.Key.Name,
+        //         Shop = g.Key.Shop.ToString(),
+        //         Count = g.Count()
+        //     }).Take(top)
+        //     .OrderByDescending(x => x.Count)
+        //     .ToListAsync(cancellationToken);
+
+        return   new List<SavedProduct>();
     }
 }

@@ -1,31 +1,30 @@
 using AngleSharp.Dom;
-using NotifyMe.Domain.Enums;
 using NotifyMe.Infrastructure.Contracts;
 
 namespace NotifyMe.Infrastructure.Services.ShopProductServices;
 
 public class ShopProductFactory
 {
-    private readonly Dictionary<Shop, IShopProductService<IDocument>> _shopFactories = new()
+    private readonly Dictionary<string, IShopProductService<IDocument>> _shopFactories = new()
     {
         {
-            Shop.Megatechnica, new MegatechnicaShopProductService()
+            "Megatechnica", new MegatechnicaShopProductService()
         },
         {
-            Shop.Itworks, new ItWorksShopProductService()
+            "Itworks", new ItWorksShopProductService()
         },
         {
-            Shop.Dressup, new DressUpShopProductService()
+            "Dressup", new DressUpShopProductService()
         },
         {
-            Shop.Europroduct, new EuroproductShopProductService()
+            "Europroduct", new EuroproductShopProductService()
         },
         {
-            Shop.Agrohub, new AgrohubProductServicec()
+            "Agrohub", new AgrohubProductServicec()
         }
     };
 
-    public IShopProductService<IDocument> GetShopFactory(Shop shop)
+    public IShopProductService<IDocument> GetShopFactory(string shop)
     {
         if (_shopFactories.TryGetValue(shop, out var factory))
         {

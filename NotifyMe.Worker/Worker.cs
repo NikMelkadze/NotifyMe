@@ -34,11 +34,11 @@ public class Worker(
         // logger.LogInformation($"Next run at {nextRunTime}. Waiting {delay.TotalMinutes} minutes.");
         // await Task.Delay(delay, stoppingToken);
 
-        List<UserSavedProduct> products;
+        List<SavedProduct> products;
         using (var scope = serviceProvider.CreateScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            products = await dbContext.UserSavedProducts
+            products = await dbContext.SavedProducts.Include(x=>x.Shop)
                 .Where(x => x.Status == ProductStatus.Active && (x.LastNotificationSentAt == null ||
                                                                  x.LastNotificationSentAt.Value.Date !=
                                                                  DateTime.Today.Date))
@@ -52,9 +52,8 @@ public class Worker(
             {
                 var html = await httpClientService.GetHtml(product.Url, stoppingToken);
                 var document = await browsingContext.OpenAsync(req => req.Content(html), stoppingToken);
-
                 var factory = new ShopProductFactory();
-                var shopFactory = factory.GetShopFactory(product.Shop);
+                var shopFactory = factory.GetShopFactory(product.Shop.Name.ToLower());
 
                 priceInformation = shopFactory.GetPriceInformation(document);
             }
@@ -98,7 +97,7 @@ public class Worker(
                         .Select(x => x.Email)
                         .FirstOrDefaultAsync(stoppingToken))!;
 
-                    SendEmail(email, product.Name, product.Shop, priceInformation.DiscountedPrice!,
+                    SendEmail(email, product.Name, product.Shop.Name, priceInformation.DiscountedPrice!,
                         priceInformation.Price);
 
                     await dbContext.SaveChangesAsync(stoppingToken);
@@ -120,7 +119,7 @@ public class Worker(
         //  await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
     }
 
-    private static void SendEmail(string userEmail, string productName, Shop shop, string currentPrice,
+    private static void SendEmail(string userEmail, string productName, string shop, string currentPrice,
         string prevPrice)
     {
         var mail = new MailMessage
@@ -145,7 +144,7 @@ public class Worker(
         Console.WriteLine($"Email sent to {userEmail}");
     }
 
-    private async Task SaveNewRegularPrice(decimal newRegularPrice, UserSavedProduct product,
+    private async Task SaveNewRegularPrice(decimal newRegularPrice, SavedProduct product,
         CancellationToken cancellationToken)
     {
         using var scope = serviceProvider.CreateScope();
@@ -157,7 +156,7 @@ public class Worker(
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task RemoveDiscountPrice(UserSavedProduct product,
+    private async Task RemoveDiscountPrice(SavedProduct product,
         CancellationToken cancellationToken)
     {
         using var scope = serviceProvider.CreateScope();
@@ -169,7 +168,7 @@ public class Worker(
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task RemovePrices(UserSavedProduct product,
+    private async Task RemovePrices(SavedProduct product,
         CancellationToken cancellationToken)
     {
         using var scope = serviceProvider.CreateScope();

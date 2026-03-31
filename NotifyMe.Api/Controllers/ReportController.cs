@@ -17,7 +17,7 @@ public class ReportController(IReportService reportService) : Controller
     }
 
     [HttpGet("{shop}/products")]
-    public async Task<ActionResult<IEnumerable<SavedProduct>>> GetTopSavedProducts([FromRoute] Shop shop,
+    public async Task<ActionResult<IEnumerable<SavedProduct>>> GetTopSavedProducts([FromRoute] string shop,
         [FromQuery] int top, CancellationToken cancellationToken)
     {
         return Ok(await reportService.GetCompanyTopSavedProducts(top, shop, cancellationToken));

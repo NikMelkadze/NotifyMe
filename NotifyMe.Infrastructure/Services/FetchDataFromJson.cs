@@ -8,7 +8,7 @@ namespace NotifyMe.Infrastructure.Services;
 
 public class FetchDataFromJson : FetchDataFactory<ProductBase>
 {
-    public override Task<ProductPriceInformation> GetDiscountInformation(ProductBase product, Shop shop,
+    public override Task<ProductPriceInformation> GetDiscountInformation(ProductBase product, string shop,
         CancellationToken cancellationToken)
     {
         return Task.FromResult(new ProductPriceInformation()
@@ -19,7 +19,7 @@ public class FetchDataFromJson : FetchDataFactory<ProductBase>
         });
     }
 
-    public override Task<string> GetProductName(ProductBase product, Shop shop, CancellationToken cancellationToken)
+    public override Task<string> GetProductName(ProductBase product, string shop, CancellationToken cancellationToken)
     {
         return Task.FromResult(product.Product.Name);
     }

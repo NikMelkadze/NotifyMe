@@ -6,5 +6,5 @@ namespace NotifyMe.Application.Contracts;
 public interface IReportService
 {
     Task<IEnumerable<SavedProduct>> GetTopSavedProducts(int top, CancellationToken cancellationToken);
-    Task<IEnumerable<SavedProduct>> GetCompanyTopSavedProducts(int top, Shop shop, CancellationToken cancellationToken);
+    Task<IEnumerable<SavedProduct>> GetCompanyTopSavedProducts(int top, string shop, CancellationToken cancellationToken);
 }
