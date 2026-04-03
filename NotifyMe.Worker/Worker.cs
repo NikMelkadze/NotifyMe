@@ -53,7 +53,7 @@ public class Worker(
                 var html = await httpClientService.GetHtml(product.Url, stoppingToken);
                 var document = await browsingContext.OpenAsync(req => req.Content(html), stoppingToken);
                 var factory = new ShopProductFactory();
-                var shopFactory = factory.GetShopFactory(product.Shop.Name.ToLower());
+                var shopFactory = factory.GetShopFactory(product.Shop.Name);
 
                 priceInformation = shopFactory.GetPriceInformation(document);
             }
