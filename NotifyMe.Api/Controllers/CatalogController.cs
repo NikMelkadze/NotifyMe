@@ -7,8 +7,8 @@ namespace NotifyMe.Api.Controllers;
 public class CatalogController(ICatalogService catalogService) : Controller
 {
     [HttpGet("shops")]
-    public Task<ActionResult<string[]>> GetProducts()
+    public async Task<ActionResult<string[]>> GetProducts(CancellationToken cancellationToken)
     {
-        return Task.FromResult<ActionResult<string[]>>(Ok(catalogService.GetShops()));
+        return Ok(await catalogService.GetShops(cancellationToken));
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NotifyMe.Persistence;
 
@@ -11,9 +12,11 @@ using NotifyMe.Persistence;
 namespace NotifyMe.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260331181328_rename_UserSavedProduct")]
+    partial class rename_UserSavedProduct
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -36,9 +39,6 @@ namespace NotifyMe.Persistence.Migrations
                     b.Property<decimal?>("DiscountedPrice")
                         .HasPrecision(6, 2)
                         .HasColumnType("decimal(6,2)");
-
-                    b.Property<int>("FailedFetchAttempts")
-                        .HasColumnType("int");
 
                     b.Property<decimal>("InitialPrice")
                         .HasPrecision(6, 2)

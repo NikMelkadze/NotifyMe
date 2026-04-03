@@ -1,12 +1,13 @@
+using Microsoft.EntityFrameworkCore;
 using NotifyMe.Application.Contracts;
-using NotifyMe.Domain.Enums;
+using NotifyMe.Persistence;
 
 namespace NotifyMe.Infrastructure.Services;
 
-public class CatalogService : ICatalogService
+public class CatalogService(ApplicationDbContext applicationDbContext) : ICatalogService
 {
-    public string[] GetShops()
+    public async Task<string[]> GetShops(CancellationToken cancellationToken)
     {
-        return Enum.GetNames<Shop>();
+        return await applicationDbContext.Shop.Select(x => x.Name).ToArrayAsync(cancellationToken);
     }
 }
