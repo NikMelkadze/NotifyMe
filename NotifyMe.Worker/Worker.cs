@@ -153,6 +153,11 @@ public class Worker(
 
         product.RegularPrice = newRegularPrice;
 
+        if (product.FailedFetchAttempts !=0)
+        {
+            product.FailedFetchAttempts = 0;
+        }
+
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
@@ -177,7 +182,12 @@ public class Worker(
 
         product.DiscountedPrice = null;
         product.RegularPrice = null;
-        product.Status = ProductStatus.IsUnavailable;
+        product.FailedFetchAttempts++;
+        
+        if (product.FailedFetchAttempts>2)
+        {
+            product.Status = ProductStatus.IsUnavailable;
+        }
 
         await dbContext.SaveChangesAsync(cancellationToken);
     }

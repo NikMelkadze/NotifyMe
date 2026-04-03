@@ -19,6 +19,7 @@ public class SavedProduct
     [Precision(6, 2)] public decimal? RegularPrice { get; set; }
     [Precision(6, 2)] public decimal? DiscountedPrice { get; set; }
     public int ShopId { get; set; }
-
+    public int FailedFetchAttempts { get; set; }
+    
     public Shop Shop { get; set; } = null!;
 }

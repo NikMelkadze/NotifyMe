@@ -136,10 +136,10 @@ public class UserProductService(
                 product.Status = ProductStatus.Active;
             }
 
-            else if (status.Value == ProductStatus.Inacetive)
+            else if (status.Value == ProductStatus.InActive)
             {
                 ResetProductChangedPrices(product);
-                product.Status = ProductStatus.Inacetive;
+                product.Status = ProductStatus.InActive;
             }
             else
             {
