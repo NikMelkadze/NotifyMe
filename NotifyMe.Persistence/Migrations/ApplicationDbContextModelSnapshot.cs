@@ -130,6 +130,12 @@ namespace NotifyMe.Persistence.Migrations
                             Id = 5,
                             Category = 0,
                             Name = "Agrohub"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Category = 1,
+                            Name = "Ee"
                         });
                 });
 
