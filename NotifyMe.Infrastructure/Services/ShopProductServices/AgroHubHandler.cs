@@ -1,18 +1,21 @@
+using AngleSharp;
 using AngleSharp.Dom;
 using NotifyMe.Infrastructure.Contracts;
 using NotifyMe.Infrastructure.Extensions;
 using NotifyMe.Infrastructure.Models;
+using NotifyMe.Infrastructure.Services.Common;
 
 namespace NotifyMe.Infrastructure.Services.ShopProductServices;
 
-public class AgrohubProductServicec : IShopProductService<IDocument>
+public class AgroHubHandler(IHttpClientService httpClientService, IBrowsingContext context)
+    : ShopHandlerBase(httpClientService, context)
 {
-    public string Price { get; set; } = null!;
-    public string? DiscountedPrice { get; set; }
-
-    public ProductPriceInformation GetPriceInformation(IDocument content)
+    public override async Task<ProductInformation> GetProductInformation(string url,
+        CancellationToken cancellationToken)
     {
-        var priceBlock = content.QuerySelector("p.sc-24adf2a9-19");
+        var document = await GetDocument(url, cancellationToken);
+
+        var priceBlock = document.QuerySelector("p.sc-24adf2a9-19");
 
         var regularPriceWhenDiscrount = priceBlock!.QuerySelector("span");
 
@@ -22,7 +25,7 @@ public class AgrohubProductServicec : IShopProductService<IDocument>
 
             var discountedPriceRaw = priceBlock
                 .ChildNodes
-                .Where(n => n.NodeType == AngleSharp.Dom.NodeType.Text)
+                .Where(n => n.NodeType == NodeType.Text)
                 .Select(n => n.TextContent)
                 .FirstOrDefault(t => !string.IsNullOrWhiteSpace(t));
 
@@ -33,19 +36,19 @@ public class AgrohubProductServicec : IShopProductService<IDocument>
             Price = priceBlock.TextContent;
         }
 
-        return new ProductPriceInformation()
+        return new ProductInformation
         {
             DiscountedPrice = DiscountedPrice?.Normalize(),
             Price = Price.NormalizePrice(),
-            IsDiscounted = DiscountedPrice != null
+            IsDiscounted = DiscountedPrice != null,
+            Name = GetProductName(document)
         };
     }
 
-    public string GetProductName(IDocument content)
+    private new static string GetProductName(IDocument content)
     {
         return content
             .QuerySelector("div.sc-24adf2a9-8 h2")
-            ?.TextContent
-            ?.Trim()!;
+            ?.TextContent.Trim()!;
     }
 }

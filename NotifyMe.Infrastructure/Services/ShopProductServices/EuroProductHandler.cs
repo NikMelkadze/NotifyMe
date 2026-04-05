@@ -1,19 +1,17 @@
-using AngleSharp.Dom;
-using NotifyMe.Domain.Exceptions;
+using AngleSharp;
 using NotifyMe.Infrastructure.Contracts;
 using NotifyMe.Infrastructure.Extensions;
 using NotifyMe.Infrastructure.Models;
+using NotifyMe.Infrastructure.Services.Common;
 
 namespace NotifyMe.Infrastructure.Services.ShopProductServices;
 
-public class EuroproductShopProductService : IShopProductService<IDocument>
+public class EuroProductHandler(IHttpClientService httpClientService, IBrowsingContext browsingContext) : ShopHandlerBase(httpClientService, browsingContext)
 {
-    public string Price { get; set; } = null!;
-    public string? DiscountedPrice { get; set; }
-
-    public ProductPriceInformation GetPriceInformation(IDocument content)
+    public override async Task<ProductInformation> GetProductInformation(string url, CancellationToken cancellationToken)
     {
-        var productItem = content.QuerySelector("div.product-item")!;
+        var document = await GetDocument(url, cancellationToken);
+        var productItem = document.QuerySelector("div.product-item")!;
 
         var discountedPriceElWhenDiscount = productItem.QuerySelector("span.product-price span.new");
         var regularPriceElWhenDiscount = productItem.QuerySelector("span.product-price span.old");
@@ -25,22 +23,17 @@ public class EuroproductShopProductService : IShopProductService<IDocument>
         }
         else
         {
-            Price = content
+            Price = document
                 .QuerySelector("span.product-price > span")
                 ?.TextContent!;
         }
 
-        return new ProductPriceInformation()
+        return new ProductInformation
         {
             DiscountedPrice = DiscountedPrice?.NormalizePrice(),
             Price = Price.NormalizePrice(),
-            IsDiscounted = DiscountedPrice != null
+            IsDiscounted = DiscountedPrice != null,
+            Name = GetProductName(document)
         };
-    }
-
-    public string GetProductName(IDocument content)
-    {
-        var element = content.QuerySelector("meta[property='og:title']");
-        return element?.GetAttribute("content") ?? throw new ValidationException("Wrong Domain");
     }
 }

@@ -7,6 +7,7 @@ using NotifyMe.Domain.Entities;
 using NotifyMe.Domain.Enums;
 using NotifyMe.Domain.Exceptions;
 using NotifyMe.Infrastructure.Contracts;
+using NotifyMe.Infrastructure.Models;
 using NotifyMe.Infrastructure.Services.ShopProductServices;
 using NotifyMe.Persistence;
 
@@ -23,26 +24,25 @@ public class UserProductService(
         CancellationToken cancellationToken)
     {
         await ValidateMaxProducts(userId, cancellationToken);
-        var shops = await dbContext.Shop.Select(x=> new
+        var shops = await dbContext.Shop.Select(x => new
         {
             x.Id,
             x.Name
         }).ToListAsync(cancellationToken);
-        
+
         var domain = UrlHelpers.GetSecondLevelDomain(url);
-        
-        Validators.UrlValidator(domain,shops.Select(x=>x.Name).ToList());
 
-        var html = await httpClientService.GetHtml(url, cancellationToken);
-        var document = await browsingContext.OpenAsync(req => req.Content(html), cancellationToken);
+        Validators.UrlValidator(domain, shops.Select(x => x.Name).ToList());
 
-        var factory = new ShopProductFactory();
+        var productInformation = new ProductInformation();
+
+        var factory = new ShopHtmlFactory(httpClientService, browsingContext);
         var shopFactory = factory.GetShopFactory(domain);
+        productInformation = await shopFactory.GetProductInformation(url, cancellationToken);
 
-        var priceInformation = shopFactory.GetPriceInformation(document);
-        var productName = shopFactory.GetProductName(document);
+        // var priceInformation = shopFactory.GetPriceInformation(document);
 
-        var initialPrice = Convert.ToDecimal(priceInformation.Price);
+        var initialPrice = Convert.ToDecimal(productInformation.Price);
 
         // var product = await httpClientService.GetProductJson(url, cancellationToken);
         // var factory = new FetchDataFromJson();
@@ -52,14 +52,14 @@ public class UserProductService(
         {
             Url = url,
             Status = ProductStatus.Active,
-            Name = productName,
+            Name = productInformation.Name,
             UserId = userId,
-            ShopId = shops.Where(x=>x.Name==domain).Select(x=>x.Id).First(),
+            ShopId = shops.Where(x => x.Name == domain).Select(x => x.Id).First(),
             NotificationType = notificationType,
             CreatedAt = DateTime.Now,
             InitialPrice = initialPrice,
             RegularPrice = initialPrice,
-            DiscountedPrice = Convert.ToDecimal(priceInformation.DiscountedPrice)
+            DiscountedPrice = Convert.ToDecimal(productInformation.DiscountedPrice)
         });
         await dbContext.SaveChangesAsync(cancellationToken);
     }
