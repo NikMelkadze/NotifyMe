@@ -8,6 +8,6 @@ public class CatalogService(ApplicationDbContext applicationDbContext) : ICatalo
 {
     public async Task<string[]> GetShops(CancellationToken cancellationToken)
     {
-        return await applicationDbContext.Shop.Select(x => x.Name).ToArrayAsync(cancellationToken);
+        return await applicationDbContext.Shop.Select(x => x.Name).AsNoTracking().ToArrayAsync(cancellationToken);
     }
 }
