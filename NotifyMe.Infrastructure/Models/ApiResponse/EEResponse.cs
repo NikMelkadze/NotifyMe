@@ -9,5 +9,5 @@ public class EeResponseProduct
 {
     public string Name { get; set; } = null!;
     public decimal Price { get; set; }
-    public decimal PreviousPrice { get; set; }
+    public decimal? PreviousPrice { get; set; }
 }

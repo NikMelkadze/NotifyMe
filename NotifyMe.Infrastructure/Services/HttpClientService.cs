@@ -1,3 +1,4 @@
+using System.Net.Http.Json;
 using NotifyMe.Application.Helpers;
 using NotifyMe.Domain.Exceptions;
 using NotifyMe.Infrastructure.Contracts;
@@ -37,7 +38,7 @@ public class HttpClientService : IHttpClientService
             var response = await client.GetAsync(apiUrl, cancellationToken);
             response.EnsureSuccessStatusCode();
 
-            return await response.Content.ReadAsStringAsync();
+            return await response.Content.ReadAsStringAsync(cancellationToken);
         }
         catch (Exception ex)
         {
