@@ -47,6 +47,12 @@ public class ApplicationDbContext(DbContextOptions options) : DbContext(options)
                     Id = 5,
                     Name = "Agrohub",
                     Category = ShopCategory.Grocery,
+                },
+                new()
+                {
+                    Id = 6,
+                    Name = "Ee",
+                    Category = ShopCategory.Technic
                 }
             }
         );
