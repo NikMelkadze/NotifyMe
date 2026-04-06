@@ -18,7 +18,7 @@ public class Worker(
     IServiceProvider serviceProvider,
     IHttpClientService httpClientService,
     IBrowsingContext browsingContext,
-    IOptionsMonitor<JwtTokensOption> _tokensOption,
+    IOptionsMonitor<JwtTokensOption> tokensOption,
     IHostApplicationLifetime lifetime) : BackgroundService
 {
     // private readonly TimeSpan _targetTime = new(17, 28, 0);
@@ -40,7 +40,7 @@ public class Worker(
         using (var scope = serviceProvider.CreateScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            products = await dbContext.SavedProducts.Include(x=>x.Shop)
+            products = await dbContext.SavedProducts.Include(x => x.Shop)
                 .Where(x => x.Status == ProductStatus.Active && (x.LastNotificationSentAt == null ||
                                                                  x.LastNotificationSentAt.Value.Date !=
                                                                  DateTime.Today.Date))
@@ -52,10 +52,10 @@ public class Worker(
             ProductInformation priceInformation;
             try
             {
-                var factory = new ShopFactory(httpClientService, browsingContext,_tokensOption);
+                var factory = new ShopFactory(httpClientService, browsingContext, tokensOption);
                 var shopFactory = factory.GetShopFactory(product.Shop.Name);
 
-                priceInformation = await shopFactory.GetProductInformation(product.Url,stoppingToken);
+                priceInformation = await shopFactory.GetProductInformation(product.Url, stoppingToken);
             }
             catch (Exception e)
             {
@@ -153,7 +153,7 @@ public class Worker(
 
         product.RegularPrice = newRegularPrice;
 
-        if (product.FailedFetchAttempts !=0)
+        if (product.FailedFetchAttempts != 0)
         {
             product.FailedFetchAttempts = 0;
         }
@@ -183,8 +183,8 @@ public class Worker(
         product.DiscountedPrice = null;
         product.RegularPrice = null;
         product.FailedFetchAttempts++;
-        
-        if (product.FailedFetchAttempts>2)
+
+        if (product.FailedFetchAttempts > 2)
         {
             product.Status = ProductStatus.IsUnavailable;
         }
