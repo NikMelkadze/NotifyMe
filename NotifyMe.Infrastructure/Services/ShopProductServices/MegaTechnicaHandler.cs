@@ -12,15 +12,23 @@ public class MegaTechnicaHandler(IHttpClientService httpClientService, IBrowsing
     {
         var document = await GetDocument(url, cancellationToken);
         var pricesDivMega = document.QuerySelector("div.prices");
-        var oldPrice = pricesDivMega!.QuerySelector("span.prev_price")?.TextContent.NormalizePrice() ?? "";
-        var currentPrice = pricesDivMega!.QuerySelector("span.price")?.TextContent.NormalizePrice() ?? "";
-        var isDiscounted = oldPrice != "";
+        Price = Convert.ToDecimal(pricesDivMega!.QuerySelector("span.prev_price")?.TextContent.NormalizePrice());
+        DiscountedPrice = Convert.ToDecimal(pricesDivMega!.QuerySelector("span.price")?.TextContent.NormalizePrice());
+
+        //When item is not discounted
+        if (Price == 0)
+        {
+            Price = DiscountedPrice.Value;
+            DiscountedPrice = null;
+        }
+        
+        var isDiscounted = DiscountedPrice != null ;
 
         return new ProductInformation
         {
             IsDiscounted = isDiscounted,
-            DiscountedPrice = currentPrice,
-            Price = oldPrice,
+            DiscountedPrice = DiscountedPrice,
+            Price = Price,
             Name = GetProductName(document)
         };
     }

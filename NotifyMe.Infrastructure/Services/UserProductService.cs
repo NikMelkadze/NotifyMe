@@ -7,7 +7,6 @@ using NotifyMe.Domain.Entities;
 using NotifyMe.Domain.Enums;
 using NotifyMe.Domain.Exceptions;
 using NotifyMe.Infrastructure.Contracts;
-using NotifyMe.Infrastructure.Models;
 using NotifyMe.Infrastructure.Services.ShopProductServices;
 using NotifyMe.Persistence;
 
@@ -34,15 +33,14 @@ public class UserProductService(
 
         Validators.UrlValidator(domain, shops.Select(x => x.Name).ToList());
 
-        var productInformation = new ProductInformation();
 
-        var factory = new ShopHtmlFactory(httpClientService, browsingContext);
+        var factory = new ShopFactory(httpClientService, browsingContext);
         var shopFactory = factory.GetShopFactory(domain);
-        productInformation = await shopFactory.GetProductInformation(url, cancellationToken);
+        var productInformation = await shopFactory.GetProductInformation(url, cancellationToken);
 
         // var priceInformation = shopFactory.GetPriceInformation(document);
 
-        var initialPrice = Convert.ToDecimal(productInformation.Price);
+        var initialPrice = productInformation.Price;
 
         // var product = await httpClientService.GetProductJson(url, cancellationToken);
         // var factory = new FetchDataFromJson();
@@ -59,7 +57,7 @@ public class UserProductService(
             CreatedAt = DateTime.Now,
             InitialPrice = initialPrice,
             RegularPrice = initialPrice,
-            DiscountedPrice = Convert.ToDecimal(productInformation.DiscountedPrice)
+            DiscountedPrice = productInformation.DiscountedPrice
         });
         await dbContext.SaveChangesAsync(cancellationToken);
     }

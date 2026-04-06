@@ -4,7 +4,7 @@ using NotifyMe.Infrastructure.Services.Common;
 
 namespace NotifyMe.Infrastructure.Services.ShopProductServices;
 
-public class ShopHtmlFactory(IHttpClientService httpClientService, IBrowsingContext browsingContext)
+public class ShopFactory(IHttpClientService httpClientService, IBrowsingContext browsingContext)
 {
     private readonly Dictionary<string, ShopHandlerBase> _shopHtmlFactories = new()
     {

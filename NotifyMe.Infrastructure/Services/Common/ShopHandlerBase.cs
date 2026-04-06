@@ -8,8 +8,8 @@ namespace NotifyMe.Infrastructure.Services.Common;
 
 public abstract class ShopHandlerBase(IHttpClientService httpClientService, IBrowsingContext? browsingContext)
 {
-    protected string Price { get; set; } = null!;
-    protected string? DiscountedPrice { get; set; }
+    protected decimal Price { get; set; }
+    protected decimal? DiscountedPrice { get; set; }
 
     public abstract Task<ProductInformation> GetProductInformation(string url, CancellationToken cancellationToken);
 

@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text.Json;
 using NotifyMe.Infrastructure.Contracts;
 using NotifyMe.Infrastructure.Models;
@@ -20,16 +19,18 @@ public class EeApiHandler(IHttpClientService httpClientService) : ShopHandlerBas
 
         if (product!.Product.PreviousPrice != null)
         {
-            Price = product.Product.PreviousPrice.ToString()!;
-            DiscountedPrice = product!.Product.Price.ToString(CultureInfo.CurrentCulture);
+            Price = product.Product.PreviousPrice.Value;
+            DiscountedPrice = product!.Product.Price;
         }
-
-        Price = product!.Product.Price.ToString(CultureInfo.CurrentCulture);
+        else
+        {
+            Price = product.Product.Price;
+        }
 
 
         return new ProductInformation
         {
-            Price =Price ,
+            Price = Price,
             DiscountedPrice = DiscountedPrice,
             IsDiscounted = DiscountedPrice != null,
             Name = product.Product.Name,

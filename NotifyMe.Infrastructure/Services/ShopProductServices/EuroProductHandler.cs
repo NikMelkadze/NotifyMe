@@ -6,9 +6,11 @@ using NotifyMe.Infrastructure.Services.Common;
 
 namespace NotifyMe.Infrastructure.Services.ShopProductServices;
 
-public class EuroProductHandler(IHttpClientService httpClientService, IBrowsingContext browsingContext) : ShopHandlerBase(httpClientService, browsingContext)
+public class EuroProductHandler(IHttpClientService httpClientService, IBrowsingContext browsingContext)
+    : ShopHandlerBase(httpClientService, browsingContext)
 {
-    public override async Task<ProductInformation> GetProductInformation(string url, CancellationToken cancellationToken)
+    public override async Task<ProductInformation> GetProductInformation(string url,
+        CancellationToken cancellationToken)
     {
         var document = await GetDocument(url, cancellationToken);
         var productItem = document.QuerySelector("div.product-item")!;
@@ -18,20 +20,20 @@ public class EuroProductHandler(IHttpClientService httpClientService, IBrowsingC
 
         if (discountedPriceElWhenDiscount != null && regularPriceElWhenDiscount != null)
         {
-            DiscountedPrice = discountedPriceElWhenDiscount.TextContent;
-            Price = regularPriceElWhenDiscount.TextContent;
+            DiscountedPrice = Convert.ToDecimal(discountedPriceElWhenDiscount.TextContent.NormalizePrice());
+            Price = Convert.ToDecimal(regularPriceElWhenDiscount.TextContent.NormalizePrice());
         }
         else
         {
-            Price = document
+            Price = Convert.ToDecimal(document
                 .QuerySelector("span.product-price > span")
-                ?.TextContent!;
+                ?.TextContent.NormalizePrice());
         }
 
         return new ProductInformation
         {
-            DiscountedPrice = DiscountedPrice?.NormalizePrice(),
-            Price = Price.NormalizePrice(),
+            DiscountedPrice = DiscountedPrice,
+            Price = Price,
             IsDiscounted = DiscountedPrice != null,
             Name = GetProductName(document)
         };

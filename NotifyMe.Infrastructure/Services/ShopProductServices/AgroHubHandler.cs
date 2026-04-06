@@ -17,11 +17,11 @@ public class AgroHubHandler(IHttpClientService httpClientService, IBrowsingConte
 
         var priceBlock = document.QuerySelector("p.sc-24adf2a9-19");
 
-        var regularPriceWhenDiscrount = priceBlock!.QuerySelector("span");
+        var regularPriceWhenDiscount = priceBlock!.QuerySelector("span");
 
-        if (regularPriceWhenDiscrount != null)
+        if (regularPriceWhenDiscount != null)
         {
-            Price = regularPriceWhenDiscrount.TextContent;
+            Price = Convert.ToDecimal(regularPriceWhenDiscount.TextContent.NormalizePrice());
 
             var discountedPriceRaw = priceBlock
                 .ChildNodes
@@ -29,17 +29,17 @@ public class AgroHubHandler(IHttpClientService httpClientService, IBrowsingConte
                 .Select(n => n.TextContent)
                 .FirstOrDefault(t => !string.IsNullOrWhiteSpace(t));
 
-            DiscountedPrice = discountedPriceRaw;
+            DiscountedPrice = Convert.ToDecimal(discountedPriceRaw!.NormalizePrice());
         }
         else
         {
-            Price = priceBlock.TextContent;
+            Price = Convert.ToDecimal(priceBlock.TextContent.NormalizePrice());
         }
 
         return new ProductInformation
         {
-            DiscountedPrice = DiscountedPrice?.Normalize(),
-            Price = Price.NormalizePrice(),
+            DiscountedPrice = DiscountedPrice,
+            Price = Price,
             IsDiscounted = DiscountedPrice != null,
             Name = GetProductName(document)
         };

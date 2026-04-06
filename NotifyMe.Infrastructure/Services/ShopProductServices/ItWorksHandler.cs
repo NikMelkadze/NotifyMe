@@ -17,19 +17,19 @@ public class ItWorksHandler(IHttpClientService httpClientService, IBrowsingConte
 
         if (regularPriceWhenDiscount != null)
         {
-            Price = regularPriceWhenDiscount;
-            DiscountedPrice = pricesDiv?.QuerySelector("#current-price")?.TextContent;
+            Price = Convert.ToDecimal(regularPriceWhenDiscount.NormalizePrice());
+            DiscountedPrice = Convert.ToDecimal(pricesDiv?.QuerySelector("#current-price")?.TextContent.NormalizePrice());
         }
         else
         {
-            Price = pricesDiv?.QuerySelector("#current-price")?.TextContent!;
+            Price = Convert.ToDecimal(pricesDiv?.QuerySelector("#current-price")?.TextContent!.NormalizePrice());
         }
 
         return new ProductInformation
         {
             IsDiscounted = DiscountedPrice != null,
-            DiscountedPrice = DiscountedPrice?.NormalizePrice(),
-            Price = Price.NormalizePrice(),
+            DiscountedPrice = DiscountedPrice,
+            Price = Price,
             Name = GetProductName(document)
         };
     }

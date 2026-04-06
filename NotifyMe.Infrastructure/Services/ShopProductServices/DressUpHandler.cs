@@ -23,20 +23,20 @@ public class DressUpHandler(IHttpClientService httpClientService, IBrowsingConte
 
         if (regularPriceWhenDiscount != null)
         {
-            DiscountedPrice = discountedPriceWhenDiscount!;
-            Price = regularPriceWhenDiscount;
+            DiscountedPrice = Convert.ToDecimal(discountedPriceWhenDiscount!.NormalizePrice());
+            Price = Convert.ToDecimal(regularPriceWhenDiscount.NormalizePrice());
         }
         else
         {
-            Price = discountedPriceWhenDiscount!;
+            Price = Convert.ToDecimal(discountedPriceWhenDiscount!.NormalizePrice());
         }
 
 
         return new ProductInformation
         {
             IsDiscounted = DiscountedPrice != null,
-            DiscountedPrice = DiscountedPrice?.NormalizePrice(),
-            Price = Price.NormalizePrice(),
+            DiscountedPrice = DiscountedPrice,
+            Price = Price,
             Name = GetProductName(document)
         };
     }
