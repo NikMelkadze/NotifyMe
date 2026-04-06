@@ -1,10 +1,12 @@
 using AngleSharp;
+using Microsoft.Extensions.Options;
 using NotifyMe.Infrastructure.Contracts;
+using NotifyMe.Infrastructure.Models;
 using NotifyMe.Infrastructure.Services.Common;
 
 namespace NotifyMe.Infrastructure.Services.ShopProductServices;
 
-public class ShopFactory(IHttpClientService httpClientService, IBrowsingContext browsingContext)
+public class ShopFactory(IHttpClientService httpClientService, IBrowsingContext browsingContext, IOptionsMonitor<JwtTokensOption> tokensOption)
 {
     private readonly Dictionary<string, ShopHandlerBase> _shopHtmlFactories = new()
     {
@@ -24,7 +26,7 @@ public class ShopFactory(IHttpClientService httpClientService, IBrowsingContext 
             "Agrohub", new AgroHubHandler(httpClientService, browsingContext)
         },
         {
-            "Ee", new EeApiHandler(httpClientService)
+            "Ee", new EeApiHandler(httpClientService,tokensOption)
         }
     };
 

@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Mail;
 using AngleSharp;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using NotifyMe.Domain.Entities;
 using NotifyMe.Domain.Enums;
 using NotifyMe.Infrastructure.Contracts;
@@ -17,6 +18,7 @@ public class Worker(
     IServiceProvider serviceProvider,
     IHttpClientService httpClientService,
     IBrowsingContext browsingContext,
+    IOptionsMonitor<JwtTokensOption> _tokensOption,
     IHostApplicationLifetime lifetime) : BackgroundService
 {
     // private readonly TimeSpan _targetTime = new(17, 28, 0);
@@ -50,7 +52,7 @@ public class Worker(
             ProductInformation priceInformation;
             try
             {
-                var factory = new ShopFactory(httpClientService, browsingContext);
+                var factory = new ShopFactory(httpClientService, browsingContext,_tokensOption);
                 var shopFactory = factory.GetShopFactory(product.Shop.Name);
 
                 priceInformation = await shopFactory.GetProductInformation(product.Url,stoppingToken);
