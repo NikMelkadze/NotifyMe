@@ -47,15 +47,13 @@ public class Worker(
 
         foreach (var product in products)
         {
-            ProductPriceInformation priceInformation;
+            ProductInformation priceInformation;
             try
             {
-                var html = await httpClientService.GetHtml(product.Url, stoppingToken);
-                var document = await browsingContext.OpenAsync(req => req.Content(html), stoppingToken);
-                var factory = new ShopProductFactory();
+                var factory = new ShopFactory(httpClientService, browsingContext);
                 var shopFactory = factory.GetShopFactory(product.Shop.Name);
 
-                priceInformation = shopFactory.GetPriceInformation(document);
+                priceInformation = await shopFactory.GetProductInformation(product.Url,stoppingToken);
             }
             catch (Exception e)
             {
@@ -64,7 +62,7 @@ public class Worker(
                 continue;
             }
 
-            var productNewRegularPrice = Convert.ToDecimal(priceInformation.Price.NormalizePrice());
+            var productNewRegularPrice = priceInformation.Price;
 
             var hasNewRegularPrice = product.InitialPrice != productNewRegularPrice ||
                                      product.RegularPrice != productNewRegularPrice;
@@ -74,7 +72,7 @@ public class Worker(
                 await SaveNewRegularPrice(productNewRegularPrice, product, stoppingToken);
             }
 
-            var discountedPrice = Convert.ToDecimal(priceInformation.DiscountedPrice?.NormalizePrice());
+            var discountedPrice = priceInformation.DiscountedPrice;
 
 
             if (priceInformation.IsDiscounted)
@@ -97,7 +95,7 @@ public class Worker(
                         .Select(x => x.Email)
                         .FirstOrDefaultAsync(stoppingToken))!;
 
-                    SendEmail(email, product.Name, product.Shop.Name, priceInformation.DiscountedPrice!,
+                    SendEmail(email, product.Name, product.Shop.Name, priceInformation.DiscountedPrice!.Value,
                         priceInformation.Price);
 
                     await dbContext.SaveChangesAsync(stoppingToken);
@@ -119,8 +117,8 @@ public class Worker(
         //  await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
     }
 
-    private static void SendEmail(string userEmail, string productName, string shop, string currentPrice,
-        string prevPrice)
+    private static void SendEmail(string userEmail, string productName, string shop, decimal currentPrice,
+        decimal prevPrice)
     {
         var mail = new MailMessage
         {
