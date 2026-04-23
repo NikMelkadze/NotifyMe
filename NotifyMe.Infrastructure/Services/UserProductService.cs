@@ -1,5 +1,6 @@
 using AngleSharp;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using NotifyMe.Application.Contracts;
 using NotifyMe.Application.Helpers;
 using NotifyMe.Application.Models.UserProducts;
@@ -7,6 +8,7 @@ using NotifyMe.Domain.Entities;
 using NotifyMe.Domain.Enums;
 using NotifyMe.Domain.Exceptions;
 using NotifyMe.Infrastructure.Contracts;
+using NotifyMe.Infrastructure.Models;
 using NotifyMe.Infrastructure.Services.ShopProductServices;
 using NotifyMe.Persistence;
 
@@ -16,6 +18,7 @@ public class UserProductService(
     ApplicationDbContext dbContext,
     IHttpClientService httpClientService,
     IBrowsingContext browsingContext,
+    IOptionsMonitor<JwtTokensOption> tokensOption,
     Microsoft.Extensions.Configuration.IConfiguration configuration)
     : IUserProductService
 {
@@ -33,8 +36,7 @@ public class UserProductService(
 
         Validators.UrlValidator(domain, shops.Select(x => x.Name).ToList());
 
-
-        var factory = new ShopFactory(httpClientService, browsingContext);
+        var factory = new ShopFactory(httpClientService, browsingContext, tokensOption);
         var shopFactory = factory.GetShopFactory(domain);
         var productInformation = await shopFactory.GetProductInformation(url, cancellationToken);
 
