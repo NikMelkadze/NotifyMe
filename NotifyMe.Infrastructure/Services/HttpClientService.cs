@@ -56,7 +56,9 @@ public class HttpClientService : IHttpClientService
             case "Zoommer":
                 return $"https://api.zoommer.ge/v1/Products/details?productId={productId}&url={productUrl}";
             case "Ee":
-                return $"https://ee-api.ee.ge/v1/Products/details?productId={productId}&url={productUrl}";
+                return $"https://ee-api.ee.ge/v1/Products/details?productId={productId}&url={productUrl}"; 
+            case "Alta":
+                return $"https://api.alta.ge/v1/Products/details?productId={productId}&url={productUrl}";
             default: throw new ValidationException("Could not convert to Api url");
         }
     }
