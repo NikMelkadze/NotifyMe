@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace NotifyMe.Application.Models;
+namespace NotifyMe.Application.Models.User;
 
-public record UserModel(
+public record RegisterModel(
     [Required, EmailAddress] string Email,
     [StringLength(20, MinimumLength = 6, ErrorMessage = "Password must be between 6 and 20 characters.")]
     [RegularExpression(
@@ -16,5 +16,3 @@ public record UserModel(
     [Required] string LastName,
     [Required, Phone, StringLength(9, MinimumLength = 9, ErrorMessage = "Phone number must be exactly 9 digits.")]
     string PhoneNumber);
-
-public record LoginModel(string EmailOrPhoneNumber, string Password);
