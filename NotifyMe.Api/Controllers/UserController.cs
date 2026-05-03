@@ -11,16 +11,17 @@ namespace NotifyMe.Api.Controllers;
 public class UserController(IUserRepository userRepository) : Controller
 {
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterModel registerModel)
+    public async Task<IActionResult> Register([FromBody] RegisterModel registerModel,
+        CancellationToken cancellationToken)
     {
-        await userRepository.Register(registerModel);
+        await userRepository.Register(registerModel, cancellationToken);
         return Ok();
     }
 
     [HttpPost("log-in")]
-    public async Task<ActionResult<string>> LogIn([FromBody] LoginModel loginModel)
+    public async Task<ActionResult<string>> LogIn([FromBody] LoginModel loginModel, CancellationToken cancellationToken)
     {
-        return Ok(await userRepository.LogIn(loginModel));
+        return Ok(await userRepository.LogIn(loginModel, cancellationToken));
     }
 
     [Authorize]
@@ -32,13 +33,19 @@ public class UserController(IUserRepository userRepository) : Controller
         return Ok(await userRepository.Details(int.Parse(userId!), cancellationToken));
     }
 
-
     [HttpPatch]
     public async Task<IActionResult> Edit([FromBody] EditUserModel request, CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         await userRepository.Edit(int.Parse(userId!), request, cancellationToken);
+        return Ok();
+    }
+
+    [HttpPost("otp")]
+    public async Task<ActionResult> SendOtp([FromBody] OtpModel request, CancellationToken cancellationToken)
+    {
+        await userRepository.SendOtp(request.Email, request.OperationType, request.Type, cancellationToken);
         return Ok();
     }
 }

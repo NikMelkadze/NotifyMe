@@ -1,18 +1,20 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NotifyMe.Application.Contracts;
 using NotifyMe.Application.Models.User;
 using NotifyMe.Domain.Entities;
+using NotifyMe.Domain.Enums;
 using NotifyMe.Persistence;
 using ValidationException = NotifyMe.Domain.Exceptions.ValidationException;
 
 namespace NotifyMe.Infrastructure.Services;
 
-public class UserRepository(ApplicationDbContext dbContext) : IUserRepository
+public class UserRepository(ApplicationDbContext dbContext,INotificationService  notificationService) : IUserRepository
 {
-    public async Task Register(RegisterModel register)
+    public async Task Register(RegisterModel register,CancellationToken cancellationToken)
     {
         if (register.Password != register.ConfirmPassword)
         {
@@ -21,7 +23,7 @@ public class UserRepository(ApplicationDbContext dbContext) : IUserRepository
 
         var existingUser =
             await dbContext.User.SingleOrDefaultAsync(x =>
-                x.Email == register.Email || x.PhoneNumber == register.PhoneNumber);
+                x.Email == register.Email || x.PhoneNumber == register.PhoneNumber,cancellationToken);
 
         if (existingUser is not null)
         {
@@ -37,13 +39,13 @@ public class UserRepository(ApplicationDbContext dbContext) : IUserRepository
             PhoneNumber = register.PhoneNumber
         });
 
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<string> LogIn(LoginModel loginModel)
+    public async Task<string> LogIn(LoginModel loginModel, CancellationToken cancellationToken)
     {
         var user = await dbContext.User.SingleOrDefaultAsync(x =>
-            x.Email == loginModel.EmailOrPhoneNumber || x.PhoneNumber == loginModel.EmailOrPhoneNumber);
+            x.Email == loginModel.EmailOrPhoneNumber || x.PhoneNumber == loginModel.EmailOrPhoneNumber,cancellationToken);
 
         if (user is null || !BCrypt.Net.BCrypt.Verify(loginModel.Password, user.PasswordHash))
         {
@@ -97,6 +99,44 @@ public class UserRepository(ApplicationDbContext dbContext) : IUserRepository
             Email = user.Email,
             PhoneNumber = user.PhoneNumber
         };
+    }
+
+    public async Task SendOtp(string email, OtpOperationType operationType, OtpType type,
+        CancellationToken cancellationToken)
+    {
+        var code = RandomNumberGenerator.GetInt32(0, 10000).ToString("D4");
+        
+        var userId = await dbContext.User.Where(x => x.Email == email).Select(x=>x.Id).FirstAsync(cancellationToken);
+
+
+        var otp = new Otp
+        {
+            Code = code,
+            ActiveMinutes = 3,
+            CreationDate = DateTime.Now,
+            OperationType = operationType,
+            UserId = userId,
+            Status = OtpStatus.Valid,
+            Type = type
+        };
+
+        var validOtp = await dbContext.Otp.FirstOrDefaultAsync(x =>
+                x.UserId == userId
+                && x.Status == OtpStatus.Valid
+                && x.Type == type
+                && x.OperationType == operationType,
+            cancellationToken);
+
+        if (validOtp != null)
+        {
+            validOtp.Status = OtpStatus.Invalid;
+        }
+
+        dbContext.Otp.Add(otp);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        
+        notificationService.SendEmail(email,"NotifyMe - Code",$"ერთჯერადი კოდი : {code}");
     }
 
     private string GenerateJwtToken(string email, int userId)

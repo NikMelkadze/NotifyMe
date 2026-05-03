@@ -22,6 +22,7 @@ public static class Configurations
         services.AddScoped<IReportService, ReportService>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ICatalogService, CatalogService>();
+        services.AddScoped<INotificationService, NotificationService>();
         
         services.Configure<JwtTokensOption>(configuration.GetSection("JwtTokens"));
     }
