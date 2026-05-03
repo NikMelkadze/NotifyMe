@@ -13,6 +13,7 @@ public class Otp
     public OtpStatus Status { get; set; }
     public string Code { get; set; } = null!;
     public DateTime CreationDate { get; set; }
+    public int ValidateAttempts { get; set; }
 
     public User User { get; set; } = null!;
 }

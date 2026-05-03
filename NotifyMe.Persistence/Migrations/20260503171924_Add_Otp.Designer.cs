@@ -12,7 +12,7 @@ using NotifyMe.Persistence;
 namespace NotifyMe.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260503143124_Add_Otp")]
+    [Migration("20260503171924_Add_Otp")]
     partial class Add_Otp
     {
         /// <inheritdoc />
@@ -53,6 +53,9 @@ namespace NotifyMe.Persistence.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ValidateAttempts")
                         .HasColumnType("int");
 
                     b.HasKey("Id");

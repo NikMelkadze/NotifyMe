@@ -12,9 +12,9 @@ using ValidationException = NotifyMe.Domain.Exceptions.ValidationException;
 
 namespace NotifyMe.Infrastructure.Services;
 
-public class UserRepository(ApplicationDbContext dbContext,INotificationService  notificationService) : IUserRepository
+public class UserRepository(ApplicationDbContext dbContext, INotificationService notificationService) : IUserRepository
 {
-    public async Task Register(RegisterModel register,CancellationToken cancellationToken)
+    public async Task Register(RegisterModel register, CancellationToken cancellationToken)
     {
         if (register.Password != register.ConfirmPassword)
         {
@@ -23,7 +23,7 @@ public class UserRepository(ApplicationDbContext dbContext,INotificationService 
 
         var existingUser =
             await dbContext.User.SingleOrDefaultAsync(x =>
-                x.Email == register.Email || x.PhoneNumber == register.PhoneNumber,cancellationToken);
+                x.Email == register.Email || x.PhoneNumber == register.PhoneNumber, cancellationToken);
 
         if (existingUser is not null)
         {
@@ -45,7 +45,8 @@ public class UserRepository(ApplicationDbContext dbContext,INotificationService 
     public async Task<string> LogIn(LoginModel loginModel, CancellationToken cancellationToken)
     {
         var user = await dbContext.User.SingleOrDefaultAsync(x =>
-            x.Email == loginModel.EmailOrPhoneNumber || x.PhoneNumber == loginModel.EmailOrPhoneNumber,cancellationToken);
+                x.Email == loginModel.EmailOrPhoneNumber || x.PhoneNumber == loginModel.EmailOrPhoneNumber,
+            cancellationToken);
 
         if (user is null || !BCrypt.Net.BCrypt.Verify(loginModel.Password, user.PasswordHash))
         {
@@ -101,14 +102,38 @@ public class UserRepository(ApplicationDbContext dbContext,INotificationService 
         };
     }
 
+    public async Task RecoveryPassword(string password, string confirmedPassword, string email, string code,
+        CancellationToken cancellationToken)
+    {
+        if (password != confirmedPassword)
+        {
+            throw new ApplicationException("Passwords do not match");
+        }
+
+
+        await ValidateOtp(email, code, cancellationToken);
+
+        var userId = await dbContext.User.Where(x => x.Email == email).Select(x => x.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var user = await dbContext.User
+            .SingleOrDefaultAsync(x => x.Id == userId, cancellationToken: cancellationToken);
+
+        user!.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
+
+        var otp = await dbContext.Otp.FirstOrDefaultAsync(x => x.UserId == userId && x.Status == OtpStatus.Valid,
+            cancellationToken);
+
+        otp!.Status = OtpStatus.Invalid;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task SendOtp(string email, OtpOperationType operationType, OtpType type,
         CancellationToken cancellationToken)
     {
         var code = RandomNumberGenerator.GetInt32(0, 10000).ToString("D4");
-        
-        var userId = await dbContext.User.Where(x => x.Email == email).Select(x=>x.Id).FirstAsync(cancellationToken);
-
-
+        var userId = await dbContext.User.Where(x => x.Email == email).Select(x => x.Id).FirstAsync(cancellationToken);
         var otp = new Otp
         {
             Code = code,
@@ -135,8 +160,43 @@ public class UserRepository(ApplicationDbContext dbContext,INotificationService 
         dbContext.Otp.Add(otp);
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        
-        notificationService.SendEmail(email,"NotifyMe - Code",$"ერთჯერადი კოდი : {code}");
+        notificationService.SendEmail(email, "NotifyMe - Code", $"ერთჯერადი კოდი : {code}");
+    }
+
+    public async Task ValidateOtp(string email, string code,
+        CancellationToken cancellationToken)
+    {
+        var userId = await dbContext.User.Where(x => x.Email == email).Select(x => x.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var otp = await dbContext.Otp.FirstOrDefaultAsync(x =>
+                x.Code == code &&
+                x.UserId == userId &&
+                x.Status == OtpStatus.Valid &&
+                x.CreationDate.AddMinutes(x.ActiveMinutes) > DateTime.Now &&
+                x.ValidateAttempts <= 3,
+            cancellationToken: cancellationToken);
+
+        if (otp == null)
+        {
+            var validOtp =
+                await dbContext.Otp.FirstOrDefaultAsync(x => x.UserId == userId && x.Status == OtpStatus.Valid,
+                    cancellationToken);
+            if (validOtp != null)
+            {
+                if (validOtp.ValidateAttempts <= 3)
+                {
+                    validOtp.Status = OtpStatus.Invalid;
+                }
+                else
+                {
+                    validOtp.ValidateAttempts++;
+                }
+            }
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            throw new ValidationException("Invalid code");
+        }
     }
 
     private string GenerateJwtToken(string email, int userId)

@@ -23,7 +23,8 @@ namespace NotifyMe.Persistence.Migrations
                     Type = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     Code = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreationDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ValidateAttempts = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {

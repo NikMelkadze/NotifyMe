@@ -11,6 +11,12 @@ public interface IUserRepository
     Task Edit(int id, EditUserModel request, CancellationToken cancellationToken);
     Task<UserDetailsModel> Details(int id, CancellationToken cancellationToken);
 
+    Task RecoveryPassword(string password, string confirmedPassword, string email, string code,
+        CancellationToken cancellationToken);
+
     Task SendOtp(string email, OtpOperationType operationType, OtpType type,
+        CancellationToken cancellationToken);
+
+    Task ValidateOtp(string email, string code,
         CancellationToken cancellationToken);
 }

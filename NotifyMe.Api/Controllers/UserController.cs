@@ -41,11 +41,27 @@ public class UserController(IUserRepository userRepository) : Controller
         await userRepository.Edit(int.Parse(userId!), request, cancellationToken);
         return Ok();
     }
+    
+    [HttpPatch("password-recovery")]
+    public async Task<IActionResult> Edit([FromBody] RecoveryPasswordModel request, CancellationToken cancellationToken)
+    {
+        await userRepository.RecoveryPassword(request.Password, request.ConfirmPassword, request.Email, request.Code,
+            cancellationToken);
+        return Ok();
+    }
 
     [HttpPost("otp")]
-    public async Task<ActionResult> SendOtp([FromBody] OtpModel request, CancellationToken cancellationToken)
+    public async Task<ActionResult> SendOtp([FromBody] SendOtpModel request, CancellationToken cancellationToken)
     {
         await userRepository.SendOtp(request.Email, request.OperationType, request.Type, cancellationToken);
+        return Ok();
+    }
+    
+    
+    [HttpPost("otp/validation")]
+    public async Task<ActionResult> ValidateOtp([FromBody] ValidateOtpModel request, CancellationToken cancellationToken)
+    {
+        await userRepository.ValidateOtp(request.Email,request.Code ,cancellationToken);
         return Ok();
     }
 }
