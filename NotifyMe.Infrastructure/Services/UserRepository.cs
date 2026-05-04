@@ -71,11 +71,6 @@ public class UserRepository(ApplicationDbContext dbContext, INotificationService
             user!.LastName = request.LastName;
         }
 
-        if (request.Email != null)
-        {
-            user!.Email = request.Email;
-        }
-
         if (request.PhoneNumber != null)
         {
             user!.PhoneNumber = request.PhoneNumber;
