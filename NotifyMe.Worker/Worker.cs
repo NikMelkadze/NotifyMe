@@ -1,12 +1,10 @@
-using System.Net;
-using System.Net.Mail;
 using AngleSharp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using NotifyMe.Application.Contracts;
 using NotifyMe.Domain.Entities;
 using NotifyMe.Domain.Enums;
 using NotifyMe.Infrastructure.Contracts;
-using NotifyMe.Infrastructure.Extensions;
 using NotifyMe.Infrastructure.Models;
 using NotifyMe.Infrastructure.Services.ShopProductServices;
 using NotifyMe.Persistence;
@@ -119,28 +117,21 @@ public class Worker(
         //  await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
     }
 
-    private static void SendEmail(string userEmail, string productName, string shop, decimal currentPrice,
+    private void SendEmail(string userEmail, string productName, string shop, decimal currentPrice,
         decimal prevPrice)
     {
-        var mail = new MailMessage
+        var subject = $"{shop} - ის ფასდაკლება მოთხოვნილ პროდუქტზე";
+        var body = $"დასახელება:{productName},\n" +
+                   $"მიმდინარე ფასი: {currentPrice},\n" +
+                   $"ძველი ფასი: {prevPrice}";
+
+
+        using (var scope = serviceProvider.CreateScope())
         {
-            From = new MailAddress("notifymeinformation@gmail.com")
-        };
+            var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+            notificationService.SendEmail(userEmail, subject, body);
+        }
 
-        SmtpClient smtpClient = new SmtpClient("smtp.gmail.com", 587)
-        {
-            Credentials = new NetworkCredential("notifymeinformation@gmail.com", "urog lnsb zjkl wbtn "),
-            EnableSsl = true
-        };
-
-        mail.To.Add(userEmail);
-        mail.Subject = $"{shop} - ის ფასდაკლება მოთხოვნილ პროდუქტზე";
-
-        mail.Body = $"დასახელება:{productName},\n" +
-                    $"მიმდინარე ფასი: {currentPrice},\n" +
-                    $"ძველი ფასი: {prevPrice}";
-
-        smtpClient.Send(mail);
         Console.WriteLine($"Email sent to {userEmail}");
     }
 

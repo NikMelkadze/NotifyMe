@@ -11,16 +11,17 @@ namespace NotifyMe.Api.Controllers;
 public class UserController(IUserRepository userRepository) : Controller
 {
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterModel registerModel)
+    public async Task<IActionResult> Register([FromBody] RegisterModel registerModel,
+        CancellationToken cancellationToken)
     {
-        await userRepository.Register(registerModel);
+        await userRepository.Register(registerModel, cancellationToken);
         return Ok();
     }
 
     [HttpPost("log-in")]
-    public async Task<ActionResult<string>> LogIn([FromBody] LoginModel loginModel)
+    public async Task<ActionResult<string>> LogIn([FromBody] LoginModel loginModel, CancellationToken cancellationToken)
     {
-        return Ok(await userRepository.LogIn(loginModel));
+        return Ok(await userRepository.LogIn(loginModel, cancellationToken));
     }
 
     [Authorize]
@@ -31,14 +32,47 @@ public class UserController(IUserRepository userRepository) : Controller
 
         return Ok(await userRepository.Details(int.Parse(userId!), cancellationToken));
     }
-
-
+    
+    [Authorize]
     [HttpPatch]
     public async Task<IActionResult> Edit([FromBody] EditUserModel request, CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         await userRepository.Edit(int.Parse(userId!), request, cancellationToken);
+        return Ok();
+    }
+    
+    [HttpPatch("password-recovery")]
+    public async Task<IActionResult> RecoveryPassword([FromBody] RecoveryPasswordModel request, CancellationToken cancellationToken)
+    {
+        await userRepository.RecoveryPassword(request.Password, request.ConfirmPassword, request.Email, request.Code,
+            cancellationToken);
+        return Ok();
+    } 
+    
+    [Authorize]
+    [HttpPatch("password")]
+    public async Task<IActionResult> RecoveryPassword([FromBody] UpdatePasswordModel request, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        await userRepository.UpdatePassword(int.Parse(userId!),request, cancellationToken);
+        return Ok();
+    }
+
+    [HttpPost("otp")]
+    public async Task<ActionResult> SendOtp([FromBody] SendOtpModel request, CancellationToken cancellationToken)
+    {
+        await userRepository.SendOtp(request.Email, request.OperationType, request.Type, cancellationToken);
+        return Ok();
+    }
+    
+    
+    [HttpPost("otp/validation")]
+    public async Task<ActionResult> ValidateOtp([FromBody] ValidateOtpModel request, CancellationToken cancellationToken)
+    {
+        await userRepository.ValidateOtp(request.Email,request.Code ,cancellationToken);
         return Ok();
     }
 }

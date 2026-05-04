@@ -10,4 +10,6 @@ public class User
     [Required] public string FirstName { get; set; } = null!;
     [Required] public string LastName { get; set; } = null!;
     [Required] public string PhoneNumber { get; set; } = null!;
+
+    public ICollection<Otp> Otps { get; set; } = null!;
 }

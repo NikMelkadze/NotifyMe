@@ -12,6 +12,7 @@
         <PackageReference Include="BCrypt.Net" Version="0.1.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
         <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.5" />
+        <PackageReference Include="System.Net.Mail.Abstractions" Version="1.1.21" />
     </ItemGroup>
 
     <ItemGroup>

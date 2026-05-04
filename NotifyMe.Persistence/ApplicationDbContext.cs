@@ -11,6 +11,7 @@ public class ApplicationDbContext(DbContextOptions options) : DbContext(options)
     public DbSet<SavedProduct> SavedProducts { get; set; }
     public DbSet<User> User { get; set; }
     public DbSet<Shop> Shop { get; set; }
+    public DbSet<Otp> Otp { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
