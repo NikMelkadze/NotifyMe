@@ -1,4 +1,5 @@
 using AngleSharp;
+using NotifyMe.Application.Contracts;
 using NotifyMe.Infrastructure.Contracts;
 using NotifyMe.Infrastructure.Models;
 using NotifyMe.Infrastructure.Services;
@@ -15,6 +16,7 @@ builder.Services.AddSingleton<IBrowsingContext>(sp =>
     return BrowsingContext.New(configuration);
 });
 builder.Services.AddSingleton<IHttpClientService, HttpClientService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.Configure<JwtTokensOption>(builder.Configuration.GetSection("JwtTokens"));
 
 

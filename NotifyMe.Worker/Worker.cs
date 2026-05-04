@@ -1,5 +1,3 @@
-using System.Net;
-using System.Net.Mail;
 using AngleSharp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -17,7 +15,6 @@ public class Worker(
     ILogger<Worker> logger,
     IServiceProvider serviceProvider,
     IHttpClientService httpClientService,
-    INotificationService notificationService,
     IBrowsingContext browsingContext,
     IOptionsMonitor<JwtTokensOption> tokensOption,
     IHostApplicationLifetime lifetime) : BackgroundService
@@ -128,7 +125,13 @@ public class Worker(
                    $"მიმდინარე ფასი: {currentPrice},\n" +
                    $"ძველი ფასი: {prevPrice}";
 
-        notificationService.SendEmail(userEmail, subject, body);
+
+        using (var scope = serviceProvider.CreateScope())
+        {
+            var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+            notificationService.SendEmail(userEmail, subject, body);
+        }
+
         Console.WriteLine($"Email sent to {userEmail}");
     }
 
