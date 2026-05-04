@@ -32,7 +32,8 @@ public class UserController(IUserRepository userRepository) : Controller
 
         return Ok(await userRepository.Details(int.Parse(userId!), cancellationToken));
     }
-
+    
+    [Authorize]
     [HttpPatch]
     public async Task<IActionResult> Edit([FromBody] EditUserModel request, CancellationToken cancellationToken)
     {
@@ -43,10 +44,20 @@ public class UserController(IUserRepository userRepository) : Controller
     }
     
     [HttpPatch("password-recovery")]
-    public async Task<IActionResult> Edit([FromBody] RecoveryPasswordModel request, CancellationToken cancellationToken)
+    public async Task<IActionResult> RecoveryPassword([FromBody] RecoveryPasswordModel request, CancellationToken cancellationToken)
     {
         await userRepository.RecoveryPassword(request.Password, request.ConfirmPassword, request.Email, request.Code,
             cancellationToken);
+        return Ok();
+    } 
+    
+    [Authorize]
+    [HttpPatch("password")]
+    public async Task<IActionResult> RecoveryPassword([FromBody] UpdatePasswordModel request, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        await userRepository.UpdatePassword(int.Parse(userId!),request, cancellationToken);
         return Ok();
     }
 

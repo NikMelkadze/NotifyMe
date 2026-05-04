@@ -81,11 +81,6 @@ public class UserRepository(ApplicationDbContext dbContext, INotificationService
             user!.PhoneNumber = request.PhoneNumber;
         }
 
-        if (request.Password != null)
-        {
-            user!.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
-        }
-
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
@@ -126,6 +121,26 @@ public class UserRepository(ApplicationDbContext dbContext, INotificationService
 
         otp!.Status = OtpStatus.Invalid;
 
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task UpdatePassword(int userId, UpdatePasswordModel request, CancellationToken cancellationToken)
+    {
+        var user = await dbContext.User
+            .SingleOrDefaultAsync(x => x.Id == userId, cancellationToken: cancellationToken);
+
+        if (!BCrypt.Net.BCrypt.Verify(request.OldPassword, user!.PasswordHash))
+        {
+            throw new ValidationException("Old password is incorrect");
+        }
+        
+        if (request.Password != request.ConfirmPassword)
+        {
+            throw new ValidationException("Passwords do not match");
+        }
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+        
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 

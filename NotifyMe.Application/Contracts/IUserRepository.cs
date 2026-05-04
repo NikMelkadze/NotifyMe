@@ -13,6 +13,7 @@ public interface IUserRepository
 
     Task RecoveryPassword(string password, string confirmedPassword, string email, string code,
         CancellationToken cancellationToken);
+    Task UpdatePassword(int userId,UpdatePasswordModel request, CancellationToken cancellationToken);
 
     Task SendOtp(string email, OtpOperationType operationType, OtpType type,
         CancellationToken cancellationToken);
