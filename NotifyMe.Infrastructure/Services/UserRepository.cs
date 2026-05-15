@@ -143,7 +143,13 @@ public class UserRepository(ApplicationDbContext dbContext, INotificationService
         CancellationToken cancellationToken)
     {
         var code = RandomNumberGenerator.GetInt32(0, 10000).ToString("D4");
-        var userId = await dbContext.User.Where(x => x.Email == email).Select(x => x.Id).FirstAsync(cancellationToken);
+        var userId = await dbContext.User.Where(x => x.Email == email).Select(x => x.Id).FirstOrDefaultAsync(cancellationToken);
+       
+        if(userId==0)
+        {
+            throw new ValidationException("Invalid Email");
+        }
+
         var otp = new Otp
         {
             Code = code,
@@ -180,33 +186,38 @@ public class UserRepository(ApplicationDbContext dbContext, INotificationService
             .FirstOrDefaultAsync(cancellationToken);
 
         var otp = await dbContext.Otp.FirstOrDefaultAsync(x =>
-                x.Code == code &&
                 x.UserId == userId &&
-                x.Status == OtpStatus.Valid &&
-                x.CreationDate.AddMinutes(x.ActiveMinutes) > DateTime.Now &&
-                x.ValidateAttempts <= 3,
+                x.Status == OtpStatus.Valid,
             cancellationToken: cancellationToken);
 
         if (otp == null)
         {
-            var validOtp =
-                await dbContext.Otp.FirstOrDefaultAsync(x => x.UserId == userId && x.Status == OtpStatus.Valid,
-                    cancellationToken);
-            if (validOtp != null)
+            throw new ValidationException("Invalid code");
+        }
+        
+        if (otp.Code != code)
+        {
+            if (otp.ValidateAttempts >= 2)
             {
-                if (validOtp.ValidateAttempts <= 3)
-                {
-                    validOtp.Status = OtpStatus.Invalid;
-                }
-                else
-                {
-                    validOtp.ValidateAttempts++;
-                }
+                otp.Status = OtpStatus.Invalid;
             }
-
+            else
+            {
+                otp.ValidateAttempts++;
+            }
+            
             await dbContext.SaveChangesAsync(cancellationToken);
             throw new ValidationException("Invalid code");
         }
+
+        if (otp.CreationDate.AddMinutes(otp.ActiveMinutes) > DateTime.Now)
+        {
+            otp.Status = OtpStatus.Invalid;
+            await dbContext.SaveChangesAsync(cancellationToken);
+            throw new ValidationException("Code is Expired");
+        }  
+
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     private string GenerateJwtToken(string email, int userId)
